@@ -44,6 +44,13 @@
             <text class="history-date">{{item.date || item.createTime || '-'}}</text>
             <view class="status-tag {{item.status}}">{{item.statusText || item.status || '-'}}</view>
           </view>
+          <view class="review-meta" wx:if="{{item.reviewBy || item.reviewTime}}">
+            <text class="review-meta-text">审核人：{{item.reviewBy || '-'}}</text>
+            <text class="review-meta-text">审核时间：{{item.reviewTime || '-'}}</text>
+          </view>
+          <view class="review-comment" wx:if="{{item.reviewComment}}">
+            <text>审核意见：{{item.reviewComment}}</text>
+          </view>
           <view class="review-actions" wx:if="{{item.status === 'pending'}}">
             <button class="review-btn reject" data-id="{{item.id}}" bindtap="rejectReimbursement">拒绝</button>
             <button class="review-btn approve" data-id="{{item.id}}" bindtap="approveReimbursement">通过</button>

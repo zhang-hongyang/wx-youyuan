@@ -45,3 +45,4 @@
 1. SPEC：L1-架构与治理/02-superpowers-需求规格-SPEC.md
 2. PLAN：L3-实施与运维/02-superpowers-执行计划-PLAN.md
 3. 工作流日志：L3-实施与运维/03-superpowers-工作流日志.md
+4. 全功能测试手册：L3-实施与运维/04-小程序全功能测试手册.md

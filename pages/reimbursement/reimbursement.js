@@ -15,6 +15,12 @@ Page({
       approved: 0,
       rejected: 0
     },
+    rejectReasonTemplates: [
+      '发票缺失或不清晰',
+      '账单截图与金额不一致',
+      '费用类型选择错误',
+      '超出报销标准，请补充说明'
+    ],
 
     orders: [],
     selectedOrderIndex: -1,
@@ -109,15 +115,22 @@ Page({
 
   async approveReimbursement(e) {
     const id = e.currentTarget.dataset.id;
-    await this.submitReviewDecision(id, 'approved');
+    await this.submitReviewDecision(id, 'approved', '财务审核通过');
   },
 
   async rejectReimbursement(e) {
     const id = e.currentTarget.dataset.id;
-    await this.submitReviewDecision(id, 'rejected');
+    const reasonTemplates = this.data.rejectReasonTemplates || [];
+    wx.showActionSheet({
+      itemList: reasonTemplates,
+      success: async (res) => {
+        const reviewComment = reasonTemplates[res.tapIndex] || '审核未通过';
+        await this.submitReviewDecision(id, 'rejected', reviewComment);
+      }
+    });
   },
 
-  async submitReviewDecision(id, decision) {
+  async submitReviewDecision(id, decision, reviewComment = '') {
     if (!id) {
       return;
     }
@@ -128,7 +141,7 @@ Page({
       await reimbursementService.reviewReimbursement({
         id,
         decision,
-        reviewComment: ''
+        reviewComment
       });
       wx.hideLoading();
       wx.showToast({ title: `已${actionText}`, icon: 'success' });
