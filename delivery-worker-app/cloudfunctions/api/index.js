@@ -24,6 +24,21 @@ const COLLECTIONS = {
 
 const DEFAULT_WEB_ADMIN_KEY = 'CHANGE_THIS_ADMIN_KEY';
 
+const USER_ROLE = {
+  ADMIN: 'admin',
+  MANAGER: 'manager',
+  WAREHOUSE: 'warehouse',
+  FINANCE: 'finance',
+  EXECUTOR: 'executor',
+  TEMP: 'temp'
+};
+
+const ROLE_ALIAS = {
+  registered: USER_ROLE.EXECUTOR,
+  formal: USER_ROLE.EXECUTOR,
+  staff: USER_ROLE.EXECUTOR
+};
+
 function ok(data) {
   return {
     code: 0,
@@ -172,27 +187,69 @@ async function getCurrentUser(openId) {
   return await findOne(COLLECTIONS.users, { openId });
 }
 
-async function assertAdminAccess(openId, header = {}) {
+function normalizeRole(role) {
+  const rawRole = String(role || '').trim();
+  if (!rawRole) {
+    return USER_ROLE.EXECUTOR;
+  }
+  return ROLE_ALIAS[rawRole] || rawRole;
+}
+
+async function assertRoleAccess(openId, roles = [], header = {}) {
   if (isValidWebAdminKey(header)) {
     return {
       employeeId: 'WEB_ADMIN',
-      role: 'admin',
+      role: USER_ROLE.ADMIN,
+      normalizedRole: USER_ROLE.ADMIN,
       name: 'Web后台管理员'
     };
   }
 
   const currentUser = await getCurrentUser(openId);
   if (!currentUser) {
-    throw new Error('当前账号未绑定员工档案');
+    const error = new Error('当前账号未绑定员工档案');
+    error.code = 40101;
+    throw error;
   }
 
-  if (!['admin', 'warehouse'].includes(currentUser.role)) {
-    const error = new Error('当前账号无后台管理权限');
+  const normalizedRole = normalizeRole(currentUser.role || currentUser.userType);
+  if (roles.length && !roles.includes(normalizedRole)) {
+    const error = new Error('当前账号无接口访问权限');
     error.code = 40301;
     throw error;
   }
 
-  return currentUser;
+  return {
+    ...currentUser,
+    normalizedRole
+  };
+}
+
+async function appendAuditLog({
+  operatorId = '',
+  module = 'system',
+  action = 'update',
+  detail = '',
+  payloadSnapshot = {}
+}) {
+  try {
+    const payload = {
+      id: `audit_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      operatorId,
+      module,
+      action,
+      detail,
+      payloadSnapshot,
+      createTime: formatNow()
+    };
+    await db.collection(COLLECTIONS.auditLogs).add({ data: payload });
+  } catch (error) {
+    // 审计失败不影响主流程
+  }
+}
+
+async function assertAdminAccess(openId, header = {}) {
+  return await assertRoleAccess(openId, [USER_ROLE.ADMIN, USER_ROLE.WAREHOUSE, USER_ROLE.MANAGER], header);
 }
 
 function formatNow() {
@@ -626,6 +683,15 @@ async function handleReimbursementHistory(openId) {
 }
 
 async function handleReimbursementSubmit(data, openId) {
+  const currentUser = await assertRoleAccess(openId, [
+    USER_ROLE.EXECUTOR,
+    USER_ROLE.TEMP,
+    USER_ROLE.FINANCE,
+    USER_ROLE.ADMIN,
+    USER_ROLE.MANAGER,
+    USER_ROLE.WAREHOUSE
+  ]);
+
   const payload = {
     ...data,
     id: data.id || `rb_${Date.now()}`,
@@ -633,6 +699,17 @@ async function handleReimbursementSubmit(data, openId) {
     createTime: data.createTime || formatNow()
   };
   await addOrUpdateByField(COLLECTIONS.reimbursements, 'id', payload);
+  await appendAuditLog({
+    operatorId: currentUser.employeeId || 'unknown',
+    module: 'reimbursement',
+    action: 'submit',
+    detail: `提交报销 ${payload.id}`,
+    payloadSnapshot: {
+      id: payload.id,
+      expenseType: payload.expenseType,
+      amount: payload.amount || 0
+    }
+  });
   return ok({ id: payload.id });
 }
 
@@ -645,6 +722,7 @@ async function handleMyProblems(openId) {
 }
 
 async function handleProblemSubmit(data, openId) {
+  const currentUser = await assertRoleAccess(openId, []);
   const payload = {
     ...data,
     id: data.id || `problem_${Date.now()}`,
@@ -652,10 +730,22 @@ async function handleProblemSubmit(data, openId) {
     createTime: data.createTime || formatNow()
   };
   await addOrUpdateByField(COLLECTIONS.problems, 'id', payload);
+  await appendAuditLog({
+    operatorId: currentUser.employeeId || 'unknown',
+    module: 'problem',
+    action: 'submit',
+    detail: `提交问题 ${payload.id}`,
+    payloadSnapshot: {
+      id: payload.id,
+      level: payload.level || '',
+      category: payload.category || ''
+    }
+  });
   return ok({ id: payload.id });
 }
 
-async function handleBonusDetail(data) {
+async function handleBonusDetail(data, openId) {
+  await assertRoleAccess(openId, []);
   const doc = await findOne(COLLECTIONS.performanceSnapshots, {
     year: data.year,
     month: data.month
@@ -683,7 +773,8 @@ async function handleBonusDetail(data) {
   });
 }
 
-async function handleBonusHistory() {
+async function handleBonusHistory(openId) {
+  await assertRoleAccess(openId, []);
   const docs = await listByWhere(COLLECTIONS.bonusHistory, {});
   if (docs.length) {
     return ok(docs.map(stripMeta));
@@ -692,6 +783,7 @@ async function handleBonusHistory() {
 }
 
 async function handleBonusAppeal(data, openId) {
+  const currentUser = await assertRoleAccess(openId, []);
   const payload = {
     ...data,
     id: data.id || `appeal_${Date.now()}`,
@@ -699,10 +791,21 @@ async function handleBonusAppeal(data, openId) {
     createTime: formatNow()
   };
   await addOrUpdateByField(COLLECTIONS.bonusAppeals, 'id', payload);
+  await appendAuditLog({
+    operatorId: currentUser.employeeId || 'unknown',
+    module: 'bonus',
+    action: 'appeal',
+    detail: `提交奖金申诉 ${payload.id}`,
+    payloadSnapshot: {
+      id: payload.id,
+      amount: payload.amount || 0
+    }
+  });
   return ok({ success: true });
 }
 
-async function handlePerformanceSummary(data) {
+async function handlePerformanceSummary(data, openId) {
+  await assertRoleAccess(openId, []);
   const doc = await findOne(COLLECTIONS.performanceSnapshots, { timeRange: data.timeRange || 'month' });
   if (doc && doc.summary) {
     return ok(stripMeta(doc.summary));
@@ -730,7 +833,8 @@ async function handlePerformanceSummary(data) {
   });
 }
 
-async function handlePerformanceTrend(data) {
+async function handlePerformanceTrend(data, openId) {
+  await assertRoleAccess(openId, []);
   const docs = await listByWhere(COLLECTIONS.performanceSnapshots, { type: `trend_${data.timeRange || 'month'}` });
   if (docs.length) {
     return ok(docs.map(stripMeta));
@@ -738,7 +842,8 @@ async function handlePerformanceTrend(data) {
   return ok([]);
 }
 
-async function handlePerformanceRankings() {
+async function handlePerformanceRankings(openId) {
+  await assertRoleAccess(openId, []);
   const docs = await listByWhere(COLLECTIONS.performanceRankings, {});
   if (docs.length) {
     return ok(docs.map(stripMeta));
@@ -857,6 +962,9 @@ async function handleAdminTasksSave(data, openId, header) {
 
 async function handleAdminTaskDispatch(data, openId, header) {
   const currentUser = await assertAdminAccess(openId, header);
+  if (![USER_ROLE.ADMIN, USER_ROLE.MANAGER].includes(currentUser.normalizedRole || normalizeRole(currentUser.role))) {
+    return fail('仅管理员或管理者可执行派单', 40301);
+  }
   if (!data.taskId || !Array.isArray(data.staffIds) || !data.staffIds.length) {
     return fail('任务ID和派单员工不能为空', 40001);
   }
@@ -889,11 +997,23 @@ async function handleAdminTaskDispatch(data, openId, header) {
     updateBy: currentUser.employeeId
   });
 
+  await appendAuditLog({
+    operatorId: currentUser.employeeId || 'unknown',
+    module: 'task',
+    action: 'dispatch',
+    detail: `派单 ${data.taskId}`,
+    payloadSnapshot: {
+      taskId: data.taskId,
+      staffIds: data.staffIds,
+      vehicleId: data.vehicleId || ''
+    }
+  });
+
   return ok(stripMeta(updatedTask));
 }
 
 async function handleAdminEmployeesDelete(data, openId, header) {
-  await assertAdminAccess(openId, header);
+  const currentUser = await assertRoleAccess(openId, [USER_ROLE.ADMIN], header);
   const employeeId = String((data && data.employeeId) || '').trim();
   if (!employeeId) {
     return fail('employeeId 不能为空', 40001);
@@ -904,11 +1024,19 @@ async function handleAdminEmployeesDelete(data, openId, header) {
     return fail('员工不存在', 40401);
   }
 
+  await appendAuditLog({
+    operatorId: currentUser.employeeId || 'unknown',
+    module: 'employee',
+    action: 'delete',
+    detail: `删除员工 ${employeeId}`,
+    payloadSnapshot: { employeeId }
+  });
+
   return ok({ success: true });
 }
 
 async function handleAdminTasksDelete(data, openId, header) {
-  await assertAdminAccess(openId, header);
+  const currentUser = await assertRoleAccess(openId, [USER_ROLE.ADMIN, USER_ROLE.MANAGER], header);
   const taskId = String((data && data.id) || '').trim();
   if (!taskId) {
     return fail('任务ID不能为空', 40001);
@@ -918,6 +1046,14 @@ async function handleAdminTasksDelete(data, openId, header) {
   if (!removed) {
     return fail('任务不存在', 40401);
   }
+
+  await appendAuditLog({
+    operatorId: currentUser.employeeId || 'unknown',
+    module: 'task',
+    action: 'delete',
+    detail: `删除任务 ${taskId}`,
+    payloadSnapshot: { taskId }
+  });
 
   return ok({ success: true });
 }
@@ -971,22 +1107,22 @@ exports.main = async (event) => {
       return await handleProblemSubmit(data, openId);
     }
     if (method === 'GET' && path === '/bonus/detail') {
-      return await handleBonusDetail(data);
+      return await handleBonusDetail(data, openId);
     }
     if (method === 'GET' && path === '/bonus/history') {
-      return await handleBonusHistory();
+      return await handleBonusHistory(openId);
     }
     if (method === 'POST' && path === '/bonus/appeal') {
       return await handleBonusAppeal(data, openId);
     }
     if (method === 'GET' && path === '/performance/summary') {
-      return await handlePerformanceSummary(data);
+      return await handlePerformanceSummary(data, openId);
     }
     if (method === 'GET' && path === '/performance/trend') {
-      return await handlePerformanceTrend(data);
+      return await handlePerformanceTrend(data, openId);
     }
     if (method === 'GET' && path === '/performance/rankings') {
-      return await handlePerformanceRankings();
+      return await handlePerformanceRankings(openId);
     }
     if (method === 'GET' && path === '/admin/employees') {
       return await handleAdminEmployeesList(openId, header);

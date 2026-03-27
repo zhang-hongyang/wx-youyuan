@@ -58,3 +58,20 @@
 3. /bonus/detail
 4. /performance/summary
 5. /reimbursements/submit
+
+## 当前实现状态（2026-03-27）
+
+### 已完成（批次A）
+
+1. 小程序端新增统一角色归一化工具与页面守卫基础。
+2. 登录后按角色分流到不同入口。
+3. 个人页已增加管理者/仓库/财务快捷入口。
+
+### 已完成（批次B）
+
+1. 云函数新增统一角色访问校验助手（支持 Web 管理密钥和小程序角色校验）。
+2. /admin/tasks/dispatch 已收紧为 admin/manager。
+3. /admin/employees/delete 已收紧为 admin。
+4. /admin/tasks/delete 已收紧为 admin/manager。
+5. 报销提交、问题提交、奖金申诉、派单/删除操作已接入审计日志。
+6. 奖金与绩效读取接口已增加“必须为已绑定账号”校验。
