@@ -1,0 +1,85 @@
+<!--pages/login/login.wxml-->
+<view class="login-container">
+  <view class="login-header">
+    <view class="header-bg">
+      <view class="wave"></view>
+    </view>
+    <view class="logo-section">
+      <view class="logo">
+        <text class="logo-icon">📦</text>
+      </view>
+      <text class="app-name">送货人员工作台</text>
+      <text class="app-slogan">智能配送 · 高效管理</text>
+    </view>
+  </view>
+
+  <view class="login-body">
+    <view class="login-card">
+      <view class="login-card-title">员工微信登录</view>
+      <view class="login-card-desc">仅支持员工使用自己的微信号登录。首次登录时，需要绑定员工档案。</view>
+
+      <button class="submit-btn" bindtap="loginWithWechat">
+        使用微信登录
+      </button>
+
+      <view class="wechat-tips">
+        <view class="tip-row">1. 首次登录：使用微信号换取当前身份</view>
+        <view class="tip-row">2. 未绑定员工档案：输入员工编号和绑定码</view>
+        <view class="tip-row">3. 绑定成功后：后续仅需微信登录</view>
+      </view>
+    </view>
+
+    <view class="bind-card" wx:if="{{bindingRequired}}">
+      <view class="bind-card-title">首次绑定员工档案</view>
+      <view class="bind-card-desc">请向管理员领取员工编号和绑定码，再完成首次绑定。</view>
+      <view class="bind-openid" wx:if="{{pendingOpenId}}">当前微信标识：{{pendingOpenId}}</view>
+
+      <view class="form-item">
+        <text class="form-label">员工编号</text>
+        <input type="text" placeholder="例如 EMP001" value="{{employeeId}}" bindinput="onEmployeeIdInput" maxlength="20"/>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">绑定码</text>
+        <input type="text" placeholder="请输入管理员发放的绑定码" value="{{bindCode}}" bindinput="onBindCodeInput" maxlength="32"/>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">姓名（可选）</text>
+        <input type="text" placeholder="用于校对档案姓名" value="{{bindName}}" bindinput="onBindNameInput" maxlength="20"/>
+      </view>
+
+      <button class="submit-btn {{canSubmitBind ? '' : 'disabled'}}" bindtap="bindWechatAccount" disabled="{{!canSubmitBind}}">
+        绑定并登录
+      </button>
+      <view class="bind-actions">
+        <button class="secondary-btn" bindtap="resetBindingState">取消绑定</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="login-footer">
+    <text class="agreement-text">
+      登录即表示同意
+      <text class="link" bindtap="showAgreement">《用户协议》</text>
+      和
+      <text class="link" bindtap="showPrivacy">《隐私政策》</text>
+    </text>
+  </view>
+</view>
+
+<view class="modal {{showModal ? 'show' : ''}}" wx:if="{{showModal}}">
+  <view class="modal-mask" bindtap="closeModal"></view>
+  <view class="modal-content">
+    <view class="modal-header">
+      <text class="modal-title">{{modalTitle}}</text>
+      <text class="modal-close" bindtap="closeModal">×</text>
+    </view>
+    <scroll-view class="modal-body" scroll-y>
+      <text class="agreement-content">{{modalContent}}</text>
+    </scroll-view>
+    <view class="modal-footer">
+      <button class="modal-btn" bindtap="closeModal">我知道了</button>
+    </view>
+  </view>
+</view>

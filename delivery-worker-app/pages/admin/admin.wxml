@@ -1,0 +1,163 @@
+<!--pages/admin/admin.wxml-->
+<view class="admin-container">
+  <!-- 顶部统计 -->
+  <view class="admin-header">
+    <view class="header-title">管理控制台</view>
+    <view class="date-display">{{currentDate}}</view>
+  </view>
+
+  <!-- 实时概览 -->
+  <view class="overview-card">
+    <view class="overview-item">
+      <text class="overview-num">{{overview.onlineStaff}}</text>
+      <text class="overview-label">在线人员</text>
+    </view>
+    <view class="overview-item">
+      <text class="overview-num">{{overview.todayTasks}}</text>
+      <text class="overview-label">今日任务</text>
+    </view>
+    <view class="overview-item">
+      <text class="overview-num">{{overview.completedTasks}}</text>
+      <text class="overview-label">已完成</text>
+    </view>
+    <view class="overview-item">
+      <text class="overview-num warning">{{overview.abnormalTasks}}</text>
+      <text class="overview-label">异常任务</text>
+    </view>
+  </view>
+
+  <!-- 人员状态 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">人员实时监控</text>
+      <text class="refresh-btn" bindtap="refreshData">🔄 刷新</text>
+    </view>
+    <view class="staff-list">
+      <view class="staff-item {{item.status}}" wx:for="{{staffStatus}}" wx:key="id">
+        <view class="staff-avatar">{{item.name[0]}}</view>
+        <view class="staff-info">
+          <view class="staff-header">
+            <text class="staff-name">{{item.name}}</text>
+            <view class="status-tag {{item.status}}">{{item.statusText}}</view>
+          </view>
+          <text class="staff-task" wx:if="{{item.currentTask}}">{{item.currentTask}}</text>
+          <text class="staff-location" wx:if="{{item.location}}">📍 {{item.location}}</text>
+        </view>
+        <view class="staff-actions">
+          <button class="action-icon" bindtap="callStaff" data-phone="{{item.phone}}">📞</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 异常提醒 -->
+  <view class="card" wx:if="{{alerts.length > 0}}">
+    <view class="card-header">
+      <text class="card-title">异常提醒</text>
+      <view class="alert-count">{{alerts.length}}条</view>
+    </view>
+    <view class="alert-list">
+      <view class="alert-item {{item.level}}" wx:for="{{alerts}}" wx:key="id">
+        <view class="alert-icon">{{item.icon}}</view>
+        <view class="alert-content">
+          <view class="alert-header">
+            <text class="alert-type">{{item.type}}</text>
+            <text class="alert-time">{{item.time}}</text>
+          </view>
+          <text class="alert-desc">{{item.description}}</text>
+          <view class="alert-staff">
+            <text>涉及人员：{{item.staffName}}</text>
+          </view>
+        </view>
+        <view class="alert-actions">
+          <button class="handle-btn" bindtap="handleAlert" data-id="{{item.id}}">处理</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 团队对比 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">团队绩效排行</text>
+      <picker bindchange="onPeriodChange" value="{{periodIndex}}" range="{{periods}}">
+        <view class="period-picker">
+          {{periods[periodIndex]}}
+          <text class="arrow">▼</text>
+        </view>
+      </picker>
+    </view>
+    <view class="ranking-list">
+      <view class="ranking-item {{item.isTop3 ? 'top3' : ''}}" wx:for="{{teamRanking}}" wx:key="id">
+        <view class="rank-num">{{index + 1}}</view>
+        <view class="rank-info">
+          <text class="rank-name">{{item.name}}</text>
+          <view class="rank-bar">
+            <view class="rank-fill" style="width: {{item.score}}%;"></view>
+          </view>
+        </view>
+        <view class="rank-score">
+          <text class="score-value">{{item.score}}分</text>
+          <text class="score-bonus">¥{{item.bonus}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 数据统计 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">关键指标</text>
+    </view>
+    <view class="metrics-grid">
+      <view class="metric-item">
+        <text class="metric-value">{{metrics.attendanceRate}}%</text>
+        <text class="metric-label">出勤率</text>
+        <view class="metric-trend {{metrics.attendanceTrend > 0 ? 'up' : 'down'}}">
+          {{metrics.attendanceTrend > 0 ? '↑' : '↓'}} {{Math.abs(metrics.attendanceTrend)}}%
+        </view>
+      </view>
+      <view class="metric-item">
+        <text class="metric-value">{{metrics.onTimeRate}}%</text>
+        <text class="metric-label">准时率</text>
+        <view class="metric-trend {{metrics.onTimeTrend > 0 ? 'up' : 'down'}}">
+          {{metrics.onTimeTrend > 0 ? '↑' : '↓'}} {{Math.abs(metrics.onTimeTrend)}}%
+        </view>
+      </view>
+      <view class="metric-item">
+        <text class="metric-value">{{metrics.avgRating}}</text>
+        <text class="metric-label">平均评分</text>
+        <view class="metric-trend {{metrics.ratingTrend > 0 ? 'up' : 'down'}}">
+          {{metrics.ratingTrend > 0 ? '↑' : '↓'}} {{Math.abs(metrics.ratingTrend)}}
+        </view>
+      </view>
+      <view class="metric-item">
+        <text class="metric-value">{{metrics.complaintRate}}%</text>
+        <text class="metric-label">投诉率</text>
+        <view class="metric-trend {{metrics.complaintTrend < 0 ? 'up' : 'down'}}">
+          {{metrics.complaintTrend < 0 ? '↓' : '↑'}} {{Math.abs(metrics.complaintTrend)}}%
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快捷入口 -->
+  <view class="quick-actions">
+    <view class="action-card" bindtap="exportReport">
+      <text class="action-icon">📊</text>
+      <text class="action-name">导出报表</text>
+    </view>
+    <view class="action-card" bindtap="manageStaff">
+      <text class="action-icon">👥</text>
+      <text class="action-name">人员管理</text>
+    </view>
+    <view class="action-card" bindtap="reviewAppeals">
+      <text class="action-icon">📝</text>
+      <text class="action-name">申诉审核</text>
+    </view>
+    <view class="action-card" bindtap="systemSettings">
+      <text class="action-icon">⚙️</text>
+      <text class="action-name">系统设置</text>
+    </view>
+  </view>
+</view>

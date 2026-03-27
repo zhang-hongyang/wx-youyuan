@@ -1,0 +1,93 @@
+<!--pages/warehouse-stats/warehouse-stats.wxml-->
+<view class="container">
+  <view class="filter-bar">
+    <picker mode="date" fields="month" value="{{selectedMonth}}" bindchange="onMonthChange">
+      <view class="month-picker">
+        <text>{{selectedMonth}}</text>
+        <text class="arrow">▼</text>
+      </view>
+    </picker>
+    <view class="filter-tabs">
+      <view class="tab {{activeTab === 'damage' ? 'active' : ''}}" bindtap="switchTab" data-tab="damage">损坏统计</view>
+      <view class="tab {{activeTab === 'inventory' ? 'active' : ''}}" bindtap="switchTab" data-tab="inventory">库存统计</view>
+    </view>
+  </view>
+
+  <!-- 损坏统计 -->
+  <view class="stats-content" wx:if="{{activeTab === 'damage'}}">
+    <view class="summary-cards">
+      <view class="summary-card scrap">
+        <text class="card-value">{{totalScrap}}</text>
+        <text class="card-label">报废总数</text>
+      </view>
+      <view class="summary-card repair">
+        <text class="card-value">{{totalRepair}}</text>
+        <text class="card-label">维修总数</text>
+      </view>
+      <view class="summary-card loss">
+        <text class="card-value">¥{{totalLoss}}</text>
+        <text class="card-label">损失金额</text>
+      </view>
+    </view>
+
+    <view class="chart-card">
+      <view class="card-title">损坏趋势（近30天）</view>
+      <view class="line-chart">
+        <view class="chart-line">
+          <view class="line-point" wx:for="{{damageTrend}}" wx:key="date" style="left: {{index * 30}}rpx; bottom: {{item.value * 5}}rpx;">
+            <view class="point-tooltip">{{item.value}}</view>
+          </view>
+        </view>
+        <view class="chart-labels">
+          <text wx:for="{{damageTrend}}" wx:key="date">{{item.date}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="chart-card">
+      <view class="card-title">损坏类型分布</view>
+      <view class="pie-chart">
+        <view class="pie-legend">
+          <view class="legend-item">
+            <view class="legend-color scrap"></view>
+            <text>报废 {{scrapPercent}}%</text>
+          </view>
+          <view class="legend-item">
+            <view class="legend-color repair"></view>
+            <text>维修 {{repairPercent}}%</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="rank-card">
+      <view class="card-title">易损物品排行</view>
+      <view class="rank-list">
+        <view class="rank-item" wx:for="{{damageRank}}" wx:key="name">
+          <text class="rank-num">{{index + 1}}</text>
+          <text class="rank-name">{{item.name}}</text>
+          <view class="rank-bar">
+            <view class="rank-fill" style="width: {{item.percent}}%"></view>
+          </view>
+          <text class="rank-value">{{item.count}}件</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 库存统计 -->
+  <view class="stats-content" wx:if="{{activeTab === 'inventory'}}">
+    <view class="inventory-list">
+      <view class="inventory-card" wx:for="{{inventoryStats}}" wx:key="name">
+        <view class="inventory-icon">{{item.icon}}</view>
+        <view class="inventory-info">
+          <text class="inventory-name">{{item.name}}</text>
+          <text class="inventory-count">库存: {{item.stock}} {{item.unit}}</text>
+        </view>
+        <view class="inventory-trend {{item.trend > 0 ? 'up' : 'down'}}">
+          {{item.trend > 0 ? '↑' : '↓'}} {{Math.abs(item.trend)}}%
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

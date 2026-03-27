@@ -1,0 +1,426 @@
+/* pages/bonus/bonus.wxss */
+
+/* 奖金卡片 */
+.bonus-card {
+  position: relative;
+  background: linear-gradient(135deg, #faad14 0%, #d48806 100%);
+  border-radius: 24rpx;
+  padding: 50rpx 40rpx;
+  margin-bottom: 20rpx;
+  overflow: hidden;
+}
+
+.bonus-bg {
+  position: absolute;
+  top: -30%;
+  right: -10%;
+  width: 250rpx;
+  height: 250rpx;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}
+
+.bonus-content {
+  position: relative;
+  text-align: center;
+  color: #ffffff;
+}
+
+.bonus-label {
+  display: block;
+  font-size: 28rpx;
+  opacity: 0.9;
+  margin-bottom: 16rpx;
+}
+
+.bonus-amount {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  margin-bottom: 20rpx;
+}
+
+.currency {
+  font-size: 48rpx;
+  font-weight: 500;
+  margin-right: 8rpx;
+  margin-top: 12rpx;
+}
+
+.amount {
+  font-size: 96rpx;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.bonus-status {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 12rpx 30rpx;
+  border-radius: 30rpx;
+  font-size: 26rpx;
+}
+
+.bonus-status.paid {
+  background: rgba(82, 196, 26, 0.3);
+}
+
+.bonus-status.pending {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.status-icon {
+  margin-right: 8rpx;
+}
+
+.bonus-watermark {
+  position: absolute;
+  bottom: -40rpx;
+  right: 20rpx;
+  font-size: 200rpx;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.08);
+  line-height: 1;
+}
+
+/* 月份选择 */
+.month-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.month-arrow {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  color: #666666;
+}
+
+.month-arrow.disabled {
+  color: #cccccc;
+}
+
+.current-month {
+  flex: 1;
+  text-align: center;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
+/* 卡片头部 */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 2rpx solid #f0f0f0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header-icon {
+  font-size: 36rpx;
+  margin-right: 12rpx;
+}
+
+.card-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.performance-badge {
+  padding: 6rpx 16rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.coefficient {
+  font-size: 26rpx;
+  color: #1890ff;
+  font-weight: 500;
+}
+
+/* 奖金明细 */
+.bonus-details {
+  margin-bottom: 30rpx;
+}
+
+.bonus-section {
+  margin-bottom: 30rpx;
+  padding-bottom: 30rpx;
+  border-bottom: 2rpx solid #f0f0f0;
+}
+
+.bonus-section:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 20rpx;
+}
+
+.title-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+}
+
+.bonus-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 0;
+}
+
+.item-left {
+  flex: 1;
+}
+
+.item-name {
+  display: block;
+  font-size: 28rpx;
+  color: #333333;
+  margin-bottom: 4rpx;
+}
+
+.item-condition {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.item-amount {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333333;
+  min-width: 120rpx;
+  text-align: right;
+}
+
+.item-amount.positive {
+  color: #52c41a;
+}
+
+.item-amount.negative {
+  color: #ff4d4f;
+}
+
+/* 计算过程 */
+.calculation {
+  background: #f8f8f8;
+  border-radius: 16rpx;
+  padding: 30rpx;
+}
+
+.calc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 0;
+  font-size: 28rpx;
+  color: #666666;
+}
+
+.calc-row.subtotal {
+  border-top: 2rpx dashed #e0e0e0;
+  margin-top: 16rpx;
+  padding-top: 24rpx;
+  font-weight: 500;
+  color: #333333;
+}
+
+.calc-row.coefficient {
+  font-size: 26rpx;
+  color: #1890ff;
+}
+
+.calc-row.total {
+  border-top: 2rpx solid #e0e0e0;
+  margin-top: 16rpx;
+  padding-top: 24rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
+.total-amount {
+  color: #faad14;
+  font-size: 40rpx;
+}
+
+/* 亮点 */
+.highlights-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.highlight-item {
+  display: flex;
+  align-items: center;
+  background: #f6ffed;
+  border-radius: 12rpx;
+  padding: 20rpx 24rpx;
+}
+
+.highlight-icon {
+  font-size: 36rpx;
+  margin-right: 16rpx;
+}
+
+.highlight-text {
+  flex: 1;
+  font-size: 28rpx;
+  color: #52c41a;
+}
+
+/* 建议 */
+.suggestions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: flex-start;
+  background: #fffbe6;
+  border-radius: 12rpx;
+  padding: 20rpx 24rpx;
+}
+
+.suggestion-num {
+  width: 36rpx;
+  height: 36rpx;
+  background: #faad14;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22rpx;
+  color: #ffffff;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+  margin-top: 2rpx;
+}
+
+.suggestion-text {
+  flex: 1;
+  font-size: 28rpx;
+  color: #d48806;
+  line-height: 1.5;
+}
+
+/* 历史记录 */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx;
+  background: #f8f8f8;
+  border-radius: 12rpx;
+}
+
+.history-left {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.history-month {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #333333;
+}
+
+.history-level {
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  font-size: 22rpx;
+  color: #ffffff;
+}
+
+.history-right {
+  text-align: right;
+}
+
+.history-amount {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 4rpx;
+}
+
+.history-status {
+  font-size: 22rpx;
+}
+
+.history-status.paid {
+  color: #52c41a;
+}
+
+.history-status.pending {
+  color: #faad14;
+}
+
+/* 申诉入口 */
+.appeal-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20rpx;
+  padding: 30rpx;
+  margin-top: 20rpx;
+}
+
+.appeal-text {
+  font-size: 26rpx;
+  color: #999999;
+}
+
+.appeal-btn {
+  padding: 16rpx 40rpx;
+  background: #1890ff;
+  color: #ffffff;
+  border-radius: 32rpx;
+  font-size: 26rpx;
+}
+
+.appeal-btn::after {
+  border: none;
+}

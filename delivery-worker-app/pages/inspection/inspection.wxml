@@ -1,0 +1,212 @@
+<!--pages/inspection/inspection.wxml-->
+<view class="container">
+  <!-- 待验收订单列表 -->
+  <view class="section-title">待验收订单</view>
+  <view class="order-list">
+    <view class="order-card {{item.isExpanded ? 'expanded' : ''}}" wx:for="{{pendingInspections}}" wx:key="id">
+      <view class="order-header" bindtap="toggleExpand" data-id="{{item.id}}">
+        <view class="order-info">
+          <text class="order-no">{{item.orderNo}}</text>
+          <text class="order-customer">{{item.customerName}}</text>
+        </view>
+        <view class="order-meta">
+          <text class="order-date">{{item.date}}</text>
+          <view class="expand-icon">{{item.isExpanded ? '▼' : '▶'}}</view>
+        </view>
+      </view>
+      
+      <!-- 展开的内容 -->
+      <view class="order-detail" wx:if="{{item.isExpanded}}">
+        <!-- 原始货物清单 -->
+        <view class="goods-section">
+          <view class="section-subtitle">原始货物清单</view>
+          <view class="goods-list">
+            <view class="goods-item header">
+              <text class="goods-name">物品名称</text>
+              <text class="goods-spec">规格</text>
+              <text class="goods-qty">应收</text>
+              <text class="goods-qty">实收</text>
+            </view>
+            <view class="goods-item {{item.missing > 0 || item.damaged > 0 ? 'abnormal' : ''}}" wx:for="{{item.goodsList}}" wx:for-item="goods" wx:key="id">
+              <text class="goods-name">{{goods.name}}</text>
+              <text class="goods-spec">{{goods.spec}}</text>
+              <text class="goods-qty expected">{{goods.expectedQty}}</text>
+              <view class="goods-qty actual">
+                <input type="number" value="{{goods.actualQty}}" bindinput="onActualQtyInput" data-order="{{item.id}}" data-goods="{{goods.id}}"/>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 物资核对 -->
+        <view class="inventory-check">
+          <view class="section-subtitle">物资归还核对</view>
+          <view class="check-item">
+            <text class="check-label">板车</text>
+            <view class="check-control">
+              <text class="check-expected">借出: {{item.assignedCarts}}</text>
+              <view class="quantity-control">
+                <view class="qty-btn" bindtap="decreaseReturnCarts" data-id="{{item.id}}">-</view>
+                <text class="qty-value">{{item.returnedCarts}}</text>
+                <view class="qty-btn" bindtap="increaseReturnCarts" data-id="{{item.id}}">+</view>
+              </view>
+            </view>
+          </view>
+          <view class="check-item">
+            <text class="check-label">运输笼</text>
+            <view class="check-control">
+              <text class="check-expected">借出: {{item.assignedCages}}</text>
+              <view class="quantity-control">
+                <view class="qty-btn" bindtap="decreaseReturnCages" data-id="{{item.id}}">-</view>
+                <text class="qty-value">{{item.returnedCages}}</text>
+                <view class="qty-btn" bindtap="increaseReturnCages" data-id="{{item.id}}">+</view>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 损坏登记 -->
+        <view class="damage-section" wx:if="{{item.hasDamage}}">
+          <view class="section-subtitle">损坏登记</view>
+          <view class="damage-list">
+            <view class="damage-item" wx:for="{{item.damages}}" wx:for-item="damage" wx:key="id">
+              <view class="damage-info">
+                <text class="damage-goods">{{damage.goodsName}}</text>
+                <text class="damage-count">数量: {{damage.count}}</text>
+              </view>
+              <view class="damage-type">
+                <picker bindchange="onDamageTypeChange" data-order="{{item.id}}" data-damage="{{damage.id}}" value="{{damage.typeIndex}}" range="{{damageTypes}}">
+                  <view class="picker-value">
+                    {{damageTypes[damage.typeIndex]}}
+                    <text class="arrow">▼</text>
+                  </view>
+                </picker>
+              </view>
+              <view class="damage-action" bindtap="removeDamage" data-order="{{item.id}}" data-damage="{{damage.id}}">
+                <text class="delete-icon">×</text>
+              </view>
+            </view>
+          </view>
+          <button class="add-damage-btn" bindtap="addDamage" data-id="{{item.id}}">+ 添加损坏记录</button>
+        </view>
+
+        <!-- 统计汇总 -->
+        <view class="summary-section">
+          <view class="section-subtitle">验收汇总</view>
+          <view class="summary-grid">
+            <view class="summary-item">
+              <text class="summary-label">缺失</text>
+              <text class="summary-value missing">{{item.totalMissing}}件</text>
+            </view>
+            <view class="summary-item">
+              <text class="summary-label">损坏待报废</text>
+              <text class="summary-value scrap">{{item.totalScrap}}件</text>
+            </view>
+            <view class="summary-item">
+              <text class="summary-label">损坏待维修</text>
+              <text class="summary-value repair">{{item.totalRepair}}件</text>
+            </view>
+            <view class="summary-item">
+              <text class="summary-label">正常归还</text>
+              <text class="summary-value normal">{{item.totalNormal}}件</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 验收备注 -->
+        <view class="remark-section">
+          <textarea placeholder="请输入验收备注..." value="{{item.remark}}" bindinput="onRemarkInput" data-id="{{item.id}}"/>
+        </view>
+
+        <!-- 操作按钮 -->
+        <view class="action-bar">
+          <button class="btn-save" bindtap="saveInspection" data-id="{{item.id}}">保存</button>
+          <button class="btn-submit" bindtap="submitInspection" data-id="{{item.id}}">提交验收</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 已验收记录 -->
+  <view class="section-title">已验收记录</view>
+  <view class="history-list">
+    <view class="history-item" wx:for="{{inspectionHistory}}" wx:key="id">
+      <view class="history-header">
+        <text class="history-no">{{item.orderNo}}</text>
+        <text class="history-date">{{item.inspectTime}}</text>
+      </view>
+      <view class="history-stats">
+        <text class="stat-item missing" wx:if="{{item.totalMissing > 0}}">缺{{item.totalMissing}}</text>
+        <text class="stat-item scrap" wx:if="{{item.totalScrap > 0}}">废{{item.totalScrap}}</text>
+        <text class="stat-item repair" wx:if="{{item.totalRepair > 0}}">修{{item.totalRepair}}</text>
+        <text class="stat-item normal" wx:if="{{item.totalNormal > 0}}">正常{{item.totalNormal}}</text>
+      </view>
+      <view class="history-staff">
+        <text>负责人: {{item.staff}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部按钮 -->
+  <view class="bottom-actions">
+    <button class="action-btn" bindtap="goToStats">
+      <text class="btn-icon">📊</text>
+      <text>损坏统计</text>
+    </button>
+    <button class="action-btn" bindtap="goToRepair">
+      <text class="btn-icon">🔧</text>
+      <text>维修管理</text>
+    </button>
+  </view>
+</view>
+
+<!-- 添加损坏弹窗 -->
+<view class="modal {{showDamageModal ? 'show' : ''}}" wx:if="{{showDamageModal}}">
+  <view class="modal-mask" bindtap="closeDamageModal"></view>
+  <view class="modal-content">
+    <view class="modal-header">
+      <text class="modal-title">添加损坏记录</text>
+      <text class="modal-close" bindtap="closeDamageModal">×</text>
+    </view>
+    <view class="modal-body">
+      <view class="form-item">
+        <text class="form-label">选择物品</text>
+        <picker bindchange="onDamageGoodsChange" value="{{damageGoodsIndex}}" range="{{currentGoodsList}}" range-key="name">
+          <view class="picker-value">
+            {{(currentGoodsList[damageGoodsIndex] && currentGoodsList[damageGoodsIndex].name) || '请选择物品'}}
+            <text class="arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+      <view class="form-item">
+        <text class="form-label">损坏数量</text>
+        <view class="quantity-control">
+          <view class="qty-btn" bindtap="decreaseDamageCount">-</view>
+          <text class="qty-value">{{damageCount}}</text>
+          <view class="qty-btn" bindtap="increaseDamageCount">+</view>
+        </view>
+      </view>
+      <view class="form-item">
+        <text class="form-label">损坏类型</text>
+        <view class="type-options">
+          <view class="type-option {{damageType === 'scrap' ? 'selected' : ''}}" bindtap="selectDamageType" data-type="scrap">
+            <text class="type-name">报废</text>
+            <text class="type-desc">无法修复</text>
+          </view>
+          <view class="type-option {{damageType === 'repair' ? 'selected' : ''}}" bindtap="selectDamageType" data-type="repair">
+            <text class="type-name">维修</text>
+            <text class="type-desc">可以修复</text>
+          </view>
+        </view>
+      </view>
+      <view class="form-item">
+        <text class="form-label">损坏说明</text>
+        <textarea placeholder="请描述损坏情况..." value="{{damageDesc}}" bindinput="onDamageDescInput"/>
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button class="btn-secondary" bindtap="closeDamageModal">取消</button>
+      <button class="btn-primary" bindtap="confirmAddDamage">确认添加</button>
+    </view>
+  </view>
+</view>

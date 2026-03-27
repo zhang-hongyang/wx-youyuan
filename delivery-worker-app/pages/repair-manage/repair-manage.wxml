@@ -1,0 +1,61 @@
+<!--pages/repair-manage/repair-manage.wxml-->
+<view class="container">
+  <view class="stats-card">
+    <view class="stats-item">
+      <text class="stats-value">{{pendingRepairs.length}}</text>
+      <text class="stats-label">待维修</text>
+    </view>
+    <view class="stats-item">
+      <text class="stats-value">{{inProgressRepairs.length}}</text>
+      <text class="stats-label">维修中</text>
+    </view>
+    <view class="stats-item">
+      <text class="stats-value">{{completedRepairs.length}}</text>
+      <text class="stats-label">已完成</text>
+    </view>
+  </view>
+
+  <view class="section-title">待维修</view>
+  <view class="repair-list">
+    <view class="repair-card" wx:for="{{pendingRepairs}}" wx:key="id">
+      <view class="repair-header">
+        <text class="repair-goods">{{item.goodsName}}</text>
+        <view class="repair-count">×{{item.count}}</view>
+      </view>
+      <view class="repair-detail">
+        <text class="repair-order">来源: {{item.orderNo}}</text>
+        <text class="repair-date">报修: {{item.reportDate}}</text>
+      </view>
+      <view class="repair-actions">
+        <button class="btn-arrange" bindtap="arrangeRepair" data-id="{{item.id}}">安排维修</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-title">维修中</view>
+  <view class="repair-list">
+    <view class="repair-card in-progress" wx:for="{{inProgressRepairs}}" wx:key="id">
+      <view class="repair-header">
+        <text class="repair-goods">{{item.goodsName}}</text>
+        <view class="repair-count">×{{item.count}}</view>
+      </view>
+      <view class="repair-detail">
+        <text class="repair-order">来源: {{item.orderNo}}</text>
+        <text class="repair-date">预计完成: {{item.estimatedCompleteDate}}</text>
+      </view>
+      <view class="progress-bar">
+        <view class="progress-fill" style="width: {{item.progress}}%"></view>
+      </view>
+    </view>
+  </view>
+
+  <view class="reminder-section" wx:if="{{todayReminders.length > 0}}">
+    <view class="section-title">今日维修提醒</view>
+    <view class="reminder-list">
+      <view class="reminder-item" wx:for="{{todayReminders}}" wx:key="id">
+        <text class="reminder-icon">🔔</text>
+        <text class="reminder-text">{{item.goodsName}} 预计今日完成维修</text>
+      </view>
+    </view>
+  </view>
+</view>

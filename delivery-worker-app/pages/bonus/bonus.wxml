@@ -1,0 +1,208 @@
+<!--pages/bonus/bonus.wxml-->
+<view class="container">
+  <!-- 月度奖金卡片 -->
+  <view class="bonus-card">
+    <view class="bonus-bg"></view>
+    <view class="bonus-content">
+      <text class="bonus-label">{{currentMonth}}月奖金</text>
+      <view class="bonus-amount">
+        <text class="currency">¥</text>
+        <text class="amount">{{monthlyBonus}}</text>
+      </view>
+      <view class="bonus-status {{bonusStatus}}">
+        <text class="status-icon">{{bonusStatus === 'paid' ? '✓' : '⏳'}}</text>
+        <text>{{bonusStatus === 'paid' ? '已发放' : '待发放'}}</text>
+      </view>
+    </view>
+    <view class="bonus-watermark">¥</view>
+  </view>
+
+  <!-- 月份选择 -->
+  <view class="month-selector">
+    <view class="month-arrow" bindtap="changeMonth" data-direction="prev">‹</view>
+    <view class="current-month">{{currentYear}}年{{currentMonth}}月</view>
+    <view class="month-arrow {{isCurrentMonth ? 'disabled' : ''}}" bindtap="changeMonth" data-direction="next">›</view>
+  </view>
+
+  <!-- 奖金明细 -->
+  <view class="card">
+    <view class="card-header">
+      <view class="header-left">
+        <text class="header-icon">💰</text>
+        <text class="card-title">奖金明细</text>
+      </view>
+      <view class="header-right">
+        <text class="performance-badge" style="background: {{performanceInfo.color}};">{{performanceInfo.level}}级</text>
+        <text class="coefficient">系数 {{performanceInfo.coefficient}}x</text>
+      </view>
+    </view>
+    
+    <view class="bonus-details">
+      <!-- 基础奖金 -->
+      <view class="bonus-section">
+        <view class="section-title">
+          <text class="title-icon">🎁</text>
+          <text>基础奖金</text>
+        </view>
+        <view class="bonus-item">
+          <view class="item-left">
+            <text class="item-name">全勤基础奖</text>
+            <text class="item-condition">当月无迟到早退旷工</text>
+          </view>
+          <text class="item-amount {{baseBonus.fullAttendance > 0 ? 'positive' : ''}}">
+            +{{baseBonus.fullAttendance}}
+          </text>
+        </view>
+      </view>
+
+      <!-- 效率奖金 -->
+      <view class="bonus-section">
+        <view class="section-title">
+          <text class="title-icon">⚡</text>
+          <text>效率奖金</text>
+        </view>
+        <view class="bonus-item">
+          <view class="item-left">
+            <text class="item-name">准时率奖金</text>
+            <text class="item-condition">准时率≥95%：{{onTimeRate}}%</text>
+          </view>
+          <text class="item-amount {{efficiencyBonus.onTime > 0 ? 'positive' : ''}}">
+            +{{efficiencyBonus.onTime}}
+          </text>
+        </view>
+        <view class="bonus-item">
+          <view class="item-left">
+            <text class="item-name">超时扣款</text>
+            <text class="item-condition">超时{{overtimeCount}}次（有正当理由减半）</text>
+          </view>
+          <text class="item-amount {{efficiencyBonus.overtime < 0 ? 'negative' : ''}}">
+            {{efficiencyBonus.overtime}}
+          </text>
+        </view>
+      </view>
+
+      <!-- 质量奖金 -->
+      <view class="bonus-section">
+        <view class="section-title">
+          <text class="title-icon">⭐</text>
+          <text>质量奖金</text>
+        </view>
+        <view class="bonus-item">
+          <view class="item-left">
+            <text class="item-name">零投诉奖金</text>
+            <text class="item-condition">无客户投诉</text>
+          </view>
+          <text class="item-amount {{qualityBonus.noComplaint > 0 ? 'positive' : ''}}">
+            +{{qualityBonus.noComplaint}}
+          </text>
+        </view>
+        <view class="bonus-item">
+          <view class="item-left">
+            <text class="item-name">好评奖金</text>
+            <text class="item-condition">平均分>4.5：{{avgRating}}分</text>
+          </view>
+          <text class="item-amount {{qualityBonus.goodRating > 0 ? 'positive' : ''}}">
+            +{{qualityBonus.goodRating}}
+          </text>
+        </view>
+        <view class="bonus-item">
+          <view class="item-left">
+            <text class="item-name">损坏扣款</text>
+            <text class="item-condition">损坏金额 ¥{{damageAmount}}</text>
+          </view>
+          <text class="item-amount {{qualityBonus.damage < 0 ? 'negative' : ''}}">
+            {{qualityBonus.damage}}
+          </text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 计算过程 -->
+    <view class="calculation">
+      <view class="calc-row">
+        <text>基础奖金合计</text>
+        <text>¥{{baseTotal}}</text>
+      </view>
+      <view class="calc-row">
+        <text>效率奖金合计</text>
+        <text>¥{{efficiencyTotal}}</text>
+      </view>
+      <view class="calc-row">
+        <text>质量奖金合计</text>
+        <text>¥{{qualityTotal}}</text>
+      </view>
+      <view class="calc-row subtotal">
+        <text>小计</text>
+        <text>¥{{subtotal}}</text>
+      </view>
+      <view class="calc-row coefficient">
+        <text>× 绩效系数 {{performanceInfo.coefficient}}</text>
+        <text></text>
+      </view>
+      <view class="calc-row total">
+        <text>本月总奖金</text>
+        <text class="total-amount">¥{{monthlyBonus}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 绩效亮点 -->
+  <view class="card" wx:if="{{highlights.length > 0}}">
+    <view class="card-header">
+      <view class="header-left">
+        <text class="header-icon">🏆</text>
+        <text class="card-title">本月亮点</text>
+      </view>
+    </view>
+    <view class="highlights-list">
+      <view class="highlight-item" wx:for="{{highlights}}" wx:key="index">
+        <text class="highlight-icon">{{item.icon}}</text>
+        <text class="highlight-text">{{item.text}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 改进建议 -->
+  <view class="card" wx:if="{{suggestions.length > 0}}">
+    <view class="card-header">
+      <view class="header-left">
+        <text class="header-icon">💡</text>
+        <text class="card-title">改进建议</text>
+      </view>
+    </view>
+    <view class="suggestions-list">
+      <view class="suggestion-item" wx:for="{{suggestions}}" wx:key="index">
+        <text class="suggestion-num">{{index + 1}}</text>
+        <text class="suggestion-text">{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 历史记录 -->
+  <view class="card">
+    <view class="card-header">
+      <view class="header-left">
+        <text class="header-icon">📈</text>
+        <text class="card-title">历史奖金</text>
+      </view>
+    </view>
+    <view class="history-list">
+      <view class="history-item" wx:for="{{bonusHistory}}" wx:key="month">
+        <view class="history-left">
+          <text class="history-month">{{item.month}}</text>
+          <view class="history-level" style="background: {{item.levelColor}};">{{item.level}}级</view>
+        </view>
+        <view class="history-right">
+          <text class="history-amount">¥{{item.amount}}</text>
+          <text class="history-status {{item.status}}">{{item.statusText}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 申诉入口 -->
+  <view class="appeal-section" wx:if="{{!isCurrentMonth}}">
+    <text class="appeal-text">对奖金计算有疑问？</text>
+    <button class="appeal-btn" bindtap="submitAppeal">申请复核</button>
+  </view>
+</view>

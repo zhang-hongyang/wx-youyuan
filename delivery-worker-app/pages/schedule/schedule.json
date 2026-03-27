@@ -1,0 +1,5 @@
+{
+  "navigationBarTitleText": "订单排班表",
+  "usingComponents": {},
+  "enablePullDownRefresh": true
+}

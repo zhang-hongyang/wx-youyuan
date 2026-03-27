@@ -1,0 +1,125 @@
+<!--pages/profile/profile.wxml-->
+<view class="container">
+  <!-- 用户信息卡片 -->
+  <view class="user-card">
+    <view class="user-bg"></view>
+    <view class="user-content">
+      <view class="user-avatar">
+        <text class="avatar-text">{{userInfo.name ? userInfo.name[0] : '?'}}</text>
+      </view>
+      <view class="user-info">
+        <view class="user-name-row">
+          <text class="user-name">{{userInfo.name || '未登录'}}</text>
+          <view class="user-tag {{userInfo.userType === 'formal' ? 'formal' : 'temp'}}">
+            {{userInfo.userType === 'formal' ? '正式员工' : '临时工'}}
+          </view>
+        </view>
+        <text class="user-id">{{userInfo.employeeId || userInfo.tempId || '-'}}</text>
+        <view class="user-skills" wx:if="{{userInfo.skills && userInfo.skills.length > 0}}">
+          <text class="skill-tag" wx:for="{{userInfo.skills}}" wx:key="index">{{item}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快捷数据 -->
+  <view class="stats-bar">
+    <view class="stat-item" bindtap="goToPerformance">
+      <text class="stat-value">{{monthlyScore}}</text>
+      <text class="stat-label">本月绩效</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item" bindtap="goToBonus">
+      <text class="stat-value">¥{{monthlyBonus}}</text>
+      <text class="stat-label">本月奖金</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <text class="stat-value">{{taskCount}}</text>
+      <text class="stat-label">本月任务</text>
+    </view>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="menu-card">
+    <view class="menu-group">
+      <view class="menu-item" bindtap="goToPerformance">
+        <view class="menu-icon performance">📊</view>
+        <text class="menu-name">绩效查询</text>
+        <text class="menu-arrow">></text>
+      </view>
+      <view class="menu-item" bindtap="goToBonus">
+        <view class="menu-icon bonus">💰</view>
+        <text class="menu-name">奖金明细</text>
+        <text class="menu-arrow">></text>
+      </view>
+      <view class="menu-item" bindtap="goToAttendance">
+        <view class="menu-icon attendance">📍</view>
+        <text class="menu-name">考勤记录</text>
+        <text class="menu-arrow">></text>
+      </view>
+    </view>
+
+    <view class="menu-group">
+      <view class="menu-item" bindtap="goToMyProblems">
+        <view class="menu-icon problem">⚠️</view>
+        <text class="menu-name">我的问题</text>
+        <view class="menu-badge" wx:if="{{pendingProblems > 0}}">{{pendingProblems}}</view>
+        <text class="menu-arrow">></text>
+      </view>
+      <view class="menu-item" bindtap="goToAppeals">
+        <view class="menu-icon appeal">📝</view>
+        <text class="menu-name">我的申诉</text>
+        <text class="menu-arrow">></text>
+      </view>
+    </view>
+
+    <view class="menu-group">
+      <view class="menu-item" bindtap="goToAdminPortal" wx:if="{{userRole === 'admin' || userRole === 'manager'}}">
+        <view class="menu-icon settings">🧭</view>
+        <text class="menu-name">管理者入口</text>
+        <text class="menu-arrow">></text>
+      </view>
+      <view class="menu-item" bindtap="goToWarehousePortal" wx:if="{{userRole === 'admin' || userRole === 'warehouse'}}">
+        <view class="menu-icon attendance">🏬</view>
+        <text class="menu-name">仓库入口</text>
+        <text class="menu-arrow">></text>
+      </view>
+      <view class="menu-item" bindtap="goToFinancePortal" wx:if="{{userRole === 'admin' || userRole === 'finance'}}">
+        <view class="menu-icon bonus">🧾</view>
+        <text class="menu-name">财务入口</text>
+        <text class="menu-arrow">></text>
+      </view>
+
+      <view class="menu-item" bindtap="goToSettings">
+        <view class="menu-icon settings">⚙️</view>
+        <text class="menu-name">设置</text>
+        <text class="menu-arrow">></text>
+      </view>
+      <view class="menu-item" bindtap="contactSupport">
+        <view class="menu-icon support">📞</view>
+        <text class="menu-name">联系客服</text>
+        <text class="menu-arrow">></text>
+      </view>
+      <view class="menu-item" bindtap="showAbout">
+        <view class="menu-icon about">ℹ️</view>
+        <text class="menu-name">关于</text>
+        <text class="menu-arrow">></text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 临时工有效期 -->
+  <view class="temp-notice" wx:if="{{userInfo.userType === 'temp'}}">
+    <text class="notice-icon">⏰</text>
+    <text class="notice-text">您的临时工账号将于 {{userInfo.expireDate}} 过期</text>
+  </view>
+
+  <!-- 退出登录 -->
+  <button class="logout-btn" bindtap="logout">退出登录</button>
+
+  <!-- 版本信息 -->
+  <view class="version-info">
+    <text>版本 1.0.0</text>
+  </view>
+</view>

@@ -1,0 +1,114 @@
+<!--pages/checkin/checkin.wxml - 新打卡页面-->
+<view class="checkin-container">
+  <!-- 打卡类型头部 -->
+  <view class="checkin-header">
+    <view class="header-bg"></view>
+    <view class="header-content">
+      <view class="type-icon-large">{{checkInTypeInfo.icon}}</view>
+      <text class="type-title">{{checkInTypeInfo.title}}</text>
+      <text class="type-desc">{{checkInTypeInfo.desc}}</text>
+    </view>
+  </view>
+
+  <!-- 打卡主体 -->
+  <view class="checkin-body">
+    <!-- 时间显示 -->
+    <view class="time-display">
+      <text class="current-time">{{currentTime}}</text>
+      <text class="current-date">{{currentDate}} {{weekDay}}</text>
+    </view>
+
+    <!-- 订单信息（如果有） -->
+    <view class="order-info-card" wx:if="{{currentOrder}}">
+      <view class="order-header">
+        <text class="order-no">{{currentOrder.orderNo}}</text>
+        <text class="customer-name">{{currentOrder.customerName}}</text>
+      </view>
+      <text class="order-address">📍 {{currentOrder.address}}</text>
+    </view>
+
+    <!-- 定位信息 -->
+    <view class="location-card" wx:if="{{checkInType !== 'complete'}}">
+      <view class="card-icon">📍</view>
+      <view class="location-content">
+        <text class="location-title">当前位置</text>
+        <text class="location-address">{{location.address || '正在定位...'}}</text>
+        <text class="location-status {{location.inRange ? 'success' : 'warning'}}" wx:if="{{location.address}}">
+          {{location.inRange ? '✓ 位置已确认' : '⚠ 不在范围内'}}
+        </text>
+      </view>
+      <view class="refresh-btn" bindtap="refreshLocation">
+        <text>🔄</text>
+      </view>
+    </view>
+
+    <!-- 拍照区域 -->
+    <view class="photo-section">
+      <view class="section-title">
+        <text class="title-icon">📷</text>
+        <text>{{photoTitle}}</text>
+        <text class="required">*</text>
+      </view>
+      
+      <view class="photo-grid">
+        <view class="photo-item" wx:for="{{photos}}" wx:key="index">
+          <image src="{{item}}" mode="aspectFill" bindtap="previewPhoto" data-index="{{index}}"/>
+          <view class="photo-watermark">
+            <text>{{currentTime}}</text>
+            <text>{{userInfo.name}}</text>
+          </view>
+          <view class="delete-btn" bindtap="deletePhoto" data-index="{{index}}">×</view>
+        </view>
+        <view class="photo-item photo-add" bindtap="takePhoto" wx:if="{{photos.length < maxPhotos}}">
+          <text class="add-icon">+</text>
+          <text class="add-text">添加照片</text>
+          <text class="add-hint">{{photos.length}}/{{maxPhotos}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 拍照提示 -->
+    <view class="photo-tips" wx:if="{{checkInType === 'work'}}">
+      <text class="tip-icon">💡</text>
+      <text class="tip-text">请在仓库范围内拍照，确保能看到仓库环境</text>
+    </view>
+    <view class="photo-tips" wx:if="{{checkInType === 'arrive'}}">
+      <text class="tip-icon">💡</text>
+      <text class="tip-text">请拍摄客户现场环境，以便确认到达位置</text>
+    </view>
+    <view class="photo-tips" wx:if="{{checkInType === 'complete'}}">
+      <text class="tip-icon">💡</text>
+      <text class="tip-text">请拍摄完成后的现场照片，展示工作成果</text>
+    </view>
+
+    <!-- 备注 -->
+    <view class="remark-section">
+      <view class="section-title">
+        <text class="title-icon">📝</text>
+        <text>备注（选填）</text>
+      </view>
+      <textarea placeholder="如有特殊情况请在此说明..." 
+                value="{{remark}}" 
+                bindinput="onRemarkInput"
+                maxlength="200"/>
+      <text class="remark-count">{{remark.length}}/200</text>
+    </view>
+  </view>
+
+  <!-- 底部操作区 -->
+  <view class="checkin-footer">
+    <view class="footer-content">
+      <view class="validation-info" wx:if="{{!canSubmit}}">
+        <text class="validation-icon">⚠️</text>
+        <text>请拍摄照片</text>
+      </view>
+      <button class="submit-btn {{canSubmit ? '' : 'disabled'}}" 
+              bindtap="submitCheckIn"
+              disabled="{{!canSubmit || isSubmitting}}">
+        <text wx:if="{{!isSubmitting}}">{{checkInTypeInfo.buttonText}}</text>
+        <text wx:else>提交中...</text>
+      </button>
+    </view>
+    <view class="safe-area-bottom"></view>
+  </view>
+</view>

@@ -1,0 +1,152 @@
+<!--pages/temp-worker-request/temp-worker-request.wxml-->
+<view class="container">
+  <!-- 订单信息 -->
+  <view class="order-card">
+    <view class="order-header">
+      <text class="order-no">{{orderInfo.orderNo}}</text>
+      <view class="order-scale scale-{{orderInfo.scale}}">{{orderInfo.scaleName}}</view>
+    </view>
+    <view class="order-info">
+      <text class="info-item">货物 {{orderInfo.goodsCount}} 件</text>
+      <text class="info-item">预计 {{orderInfo.estimatedHours}} 小时</text>
+    </view>
+  </view>
+
+  <!-- 申请数量 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">申请人数</text>
+      <text class="required">*</text>
+    </view>
+    <view class="count-selector">
+      <view class="count-btn {{tempCount <= 1 ? 'disabled' : ''}}" bindtap="decreaseCount">-</view>
+      <text class="count-value">{{tempCount}} 人</text>
+      <view class="count-btn {{tempCount >= 5 ? 'disabled' : ''}}" bindtap="increaseCount">+</view>
+    </view>
+    <view class="count-hint">
+      <text>根据订单规模，建议申请 {{suggestedCount}} 人</text>
+    </view>
+  </view>
+
+  <!-- 预计工作时长 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">预计工作时长</text>
+      <text class="required">*</text>
+    </view>
+    <view class="hours-selector">
+      <view class="hour-option {{estimatedHours === item ? 'active' : ''}}" 
+            wx:for="{{[2, 4, 6, 8]}}" 
+            wx:key="*this"
+            bindtap="selectHours"
+            data-hours="{{item}}">
+        {{item}}小时
+      </view>
+    </view>
+    <view class="custom-hours" wx:if="{{showCustomHours}}">
+      <input type="number" placeholder="请输入小时数" value="{{customHours}}" bindinput="onCustomHoursInput"/>
+    </view>
+    <view class="toggle-custom" bindtap="toggleCustomHours">
+      <text>{{showCustomHours ? '选择固定时长' : '自定义时长'}}</text>
+    </view>
+  </view>
+
+  <!-- 申请原因 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">申请原因</text>
+      <text class="required">*</text>
+    </view>
+    <view class="reason-list">
+      <view class="reason-option {{selectedReason === item ? 'active' : ''}}" 
+            wx:for="{{reasonOptions}}" 
+            wx:key="*this"
+            bindtap="selectReason"
+            data-reason="{{item}}">
+        {{item}}
+      </view>
+    </view>
+    <textarea class="custom-reason" 
+              placeholder="请详细说明需要临时工配合的具体原因..." 
+              value="{{customReason}}"
+              bindinput="onCustomReasonInput"
+              maxlength="200"
+              wx:if="{{selectedReason === '其他' || showCustomReason}}"/>
+    <text class="char-count" wx:if="{{selectedReason === '其他' || showCustomReason}}">{{customReason.length}}/200</text>
+  </view>
+
+  <!-- 工作说明 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">工作安排说明</text>
+      <text class="optional">（选填）</text>
+    </view>
+    <textarea placeholder="请说明临时工的具体工作内容、注意事项等..." 
+              value="{{workDescription}}"
+              bindinput="onWorkDescriptionInput"
+              maxlength="300"/>
+    <text class="char-count">{{workDescription.length}}/300</text>
+  </view>
+
+  <!-- 提醒事项 -->
+  <view class="notice-card">
+    <view class="notice-header">
+      <text class="notice-icon">📋</text>
+      <text class="notice-title">临时工管理须知</text>
+    </view>
+    <view class="notice-list">
+      <view class="notice-item">
+        <text class="notice-dot"></text>
+        <text>临时工下班时必须拍照打卡确认</text>
+      </view>
+      <view class="notice-item">
+        <text class="notice-dot"></text>
+        <text>请确保临时工了解安全注意事项</text>
+      </view>
+      <view class="notice-item">
+        <text class="notice-dot"></text>
+        <text>临时工费用按实际工作时长结算</text>
+      </view>
+      <view class="notice-item">
+        <text class="notice-dot"></text>
+        <text>请在任务开始前1小时提交申请</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 费用预估 -->
+  <view class="cost-card">
+    <view class="cost-row">
+      <text class="cost-label">预估费用</text>
+      <view class="cost-value">
+        <text class="cost-amount">¥{{estimatedCost}}</text>
+        <text class="cost-unit">（{{tempCount}}人 × {{estimatedHours}}小时 × ¥30/小时）</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <button class="submit-btn {{canSubmit ? '' : 'disabled'}}" bindtap="submitRequest" disabled="{{!canSubmit || isSubmitting}}">
+    <text wx:if="{{!isSubmitting}}">提交申请</text>
+    <text wx:else>提交中...</text>
+  </button>
+
+  <!-- 申请记录 -->
+  <view class="history-section">
+    <view class="section-header">
+      <text class="section-title">我的申请记录</text>
+    </view>
+    <view class="history-list">
+      <view class="history-item {{item.status}}" wx:for="{{requestHistory}}" wx:key="id">
+        <view class="history-main">
+          <text class="history-order">{{item.orderNo}}</text>
+          <text class="history-count">{{item.count}}人 × {{item.hours}}小时</text>
+        </view>
+        <view class="history-side">
+          <view class="status-tag {{item.status}}">{{item.statusText}}</view>
+          <text class="history-cost">¥{{item.cost}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

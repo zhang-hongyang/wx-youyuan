@@ -1,0 +1,194 @@
+<!--pages/schedule/schedule.wxml-->
+<view class="schedule-container">
+  <!-- 顶部日期切换 -->
+  <view class="date-header">
+    <view class="date-nav">
+      <view class="nav-btn" bindtap="changeWeek" data-direction="prev">‹</view>
+      <view class="current-week">
+        <text class="week-range">{{weekRange}}</text>
+        <text class="week-subtitle">{{currentMonth}}</text>
+      </view>
+      <view class="nav-btn" bindtap="changeWeek" data-direction="next">›</view>
+    </view>
+    <view class="today-btn" bindtap="goToToday">今天</view>
+  </view>
+
+  <!-- 星期标题 -->
+  <view class="week-header">
+    <view class="time-column">时间</view>
+    <view class="day-column {{item.isToday ? 'today' : ''}}" wx:for="{{weekDays}}" wx:key="date">
+      <text class="day-name">{{item.dayName}}</text>
+      <text class="day-date">{{item.dayNum}}</text>
+      <view class="day-dot" wx:if="{{item.hasOrder}}"></view>
+    </view>
+  </view>
+
+  <!-- 排班表主体 -->
+  <scroll-view class="schedule-body" scroll-y>
+    <view class="time-slots">
+      <view class="time-row" wx:for="{{timeSlots}}" wx:key="time">
+        <view class="time-label">{{item.label}}</view>
+        <view class="day-slots">
+          <view class="slot {{slot.orders.length > 0 ? 'has-orders' : ''}} {{slot.isPast ? 'past' : ''}}" 
+                wx:for="{{item.slots}}" 
+                wx:for-item="slot"
+                wx:for-index="dayIndex"
+                wx:key="dayIndex"
+                bindtap="onSlotTap"
+                data-time="{{item.time}}"
+                data-day="{{dayIndex}}">
+            
+            <!-- 订单卡片 -->
+            <view class="order-mini {{order.status}}" 
+                  wx:for="{{slot.orders}}" 
+                  wx:for-item="order"
+                  wx:key="id"
+                  catchtap="onOrderTap"
+                  data-id="{{order.id}}">
+              <view class="mini-time">{{order.time}}</view>
+              <view class="mini-customer">{{order.customerName}}</view>
+              <view class="mini-scale">{{order.scale}}</view>
+              <view class="mini-assign">
+                <text wx:if="{{order.assigned}}">✓已安排</text>
+                <text wx:else class="unassigned">待安排</text>
+              </view>
+            </view>
+            
+            <!-- 添加按钮（空时段） -->
+            <view class="add-hint" wx:if="{{slot.orders.length === 0 && !slot.isPast}}">
+              <text class="add-icon">+</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 图例 -->
+  <view class="legend-bar">
+    <view class="legend-item">
+      <view class="legend-dot assigned"></view>
+      <text>已安排</text>
+    </view>
+    <view class="legend-item">
+      <view class="legend-dot unassigned"></view>
+      <text>待安排</text>
+    </view>
+    <view class="legend-item">
+      <view class="legend-dot temp"></view>
+      <text>临时单</text>
+    </view>
+    <view class="legend-item">
+      <view class="legend-dot urgent"></view>
+      <text>紧急</text>
+    </view>
+  </view>
+
+  <!-- 待处理订单列表 -->
+  <view class="pending-section" wx:if="{{pendingOrders.length > 0}}">
+    <view class="section-header">
+      <text class="section-title">待处理订单</text>
+      <text class="badge">{{pendingOrders.length}}</text>
+    </view>
+    <scroll-view class="pending-list" scroll-x>
+      <view class="pending-card {{item.isTemp ? 'temp' : ''}} {{item.isUrgent ? 'urgent' : ''}}" 
+            wx:for="{{pendingOrders}}" 
+            wx:key="id"
+            bindtap="onOrderTap"
+            data-id="{{item.id}}">
+        <view class="pending-header">
+          <text class="pending-no">{{item.orderNo}}</text>
+          <view class="pending-tags">
+            <text class="tag temp-tag" wx:if="{{item.isTemp}}">临时</text>
+            <text class="tag urgent-tag" wx:if="{{item.isUrgent}}">紧急</text>
+          </view>
+        </view>
+        <text class="pending-customer">{{item.customerName}}</text>
+        <view class="pending-footer">
+          <text class="pending-time">{{item.scheduledTime}}</text>
+          <text class="pending-goods">{{item.goodsCount}}件</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 快速操作按钮 -->
+  <view class="fab-menu" wx:if="{{isWarehouseManager}}">
+    <view class="fab-item" bindtap="uploadTempOrder">
+      <text class="fab-icon">⚡</text>
+      <text class="fab-text">临时单</text>
+    </view>
+    <view class="fab-item" bindtap="goToInspection">
+      <text class="fab-icon">📋</text>
+      <text class="fab-text">验收</text>
+    </view>
+    <view class="fab-item main" bindtap="goToStats">
+      <text class="fab-icon">📊</text>
+      <text class="fab-text">统计</text>
+    </view>
+  </view>
+</view>
+
+<!-- 订单详情弹窗 -->
+<view class="modal {{showOrderModal ? 'show' : ''}}" wx:if="{{showOrderModal}}">
+  <view class="modal-mask" bindtap="closeModal"></view>
+  <view class="modal-content">
+    <view class="modal-header">
+      <text class="modal-title">订单详情</text>
+      <text class="modal-close" bindtap="closeModal">×</text>
+    </view>
+    <view class="modal-body">
+      <view class="detail-section">
+        <text class="section-label">订单信息</text>
+        <view class="detail-row">
+          <text class="detail-label">订单编号</text>
+          <text class="detail-value">{{selectedOrder.orderNo}}</text>
+        </view>
+        <view class="detail-row">
+          <text class="detail-label">客户名称</text>
+          <text class="detail-value">{{selectedOrder.customerName}}</text>
+        </view>
+        <view class="detail-row">
+          <text class="detail-label">配送地址</text>
+          <text class="detail-value">{{selectedOrder.address}}</text>
+        </view>
+        <view class="detail-row">
+          <text class="detail-label">预约时间</text>
+          <text class="detail-value">{{selectedOrder.scheduledTime}}</text>
+        </view>
+      </view>
+
+      <view class="detail-section" wx:if="{{selectedOrder.assigned}}">
+        <text class="section-label">安排情况</text>
+        <view class="detail-row">
+          <text class="detail-label">负责人员</text>
+          <text class="detail-value">{{selectedOrder.assignedStaff}}</text>
+        </view>
+        <view class="detail-row">
+          <text class="detail-label">运输车辆</text>
+          <text class="detail-value">{{selectedOrder.vehicle}}</text>
+        </view>
+        <view class="detail-row">
+          <text class="detail-label">预计时长</text>
+          <text class="detail-value">{{selectedOrder.estimatedHours}}小时</text>
+        </view>
+      </view>
+
+      <view class="detail-section">
+        <text class="section-label">物资配备</text>
+        <view class="detail-row">
+          <text class="detail-label">板车数量</text>
+          <text class="detail-value">{{selectedOrder.carts}}辆</text>
+        </view>
+        <view class="detail-row">
+          <text class="detail-label">运输笼数量</text>
+          <text class="detail-value">{{selectedOrder.cages}}个</text>
+        </view>
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button class="btn-secondary" bindtap="closeModal">关闭</button>
+      <button class="btn-primary" bindtap="editOrder">{{selectedOrder.assigned ? '重新安排' : '安排订单'}}</button>
+    </view>
+  </view>
+</view>

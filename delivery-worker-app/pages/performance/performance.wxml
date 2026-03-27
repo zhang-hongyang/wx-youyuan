@@ -1,0 +1,245 @@
+<!--pages/performance/performance.wxml-->
+<view class="container">
+  <!-- 综合评分卡片 -->
+  <view class="score-card">
+    <view class="score-bg"></view>
+    <view class="score-content">
+      <view class="score-circle">
+        <view class="circle-progress" style="--score: {{monthlyScore}};">
+          <view class="circle-inner">
+            <text class="score-num">{{monthlyScore}}</text>
+            <text class="score-label">综合得分</text>
+          </view>
+        </view>
+        <view class="level-badge" style="background: {{performanceInfo.color}};">
+          {{performanceInfo.level}}级
+        </view>
+      </view>
+      <view class="score-info">
+        <view class="rank-item">
+          <text class="rank-label">本月排名</text>
+          <text class="rank-value">{{rank}}<text class="rank-total">/{{totalStaff}}</text></text>
+        </view>
+        <view class="coefficient-item">
+          <text class="coeff-label">绩效系数</text>
+          <text class="coeff-value">{{performanceInfo.coefficient}}x</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 时间筛选 -->
+  <view class="filter-tabs">
+    <view class="filter-tab {{timeRange === 'day' ? 'active' : ''}}" bindtap="switchTimeRange" data-range="day">今日</view>
+    <view class="filter-tab {{timeRange === 'week' ? 'active' : ''}}" bindtap="switchTimeRange" data-range="week">本周</view>
+    <view class="filter-tab {{timeRange === 'month' ? 'active' : ''}}" bindtap="switchTimeRange" data-range="month">本月</view>
+  </view>
+
+  <!-- KPI 指标 -->
+  <view class="card">
+    <view class="card-header">
+      <view class="header-left">
+        <text class="header-icon">📊</text>
+        <text class="card-title">KPI 指标</text>
+      </view>
+    </view>
+    
+    <view class="kpi-list">
+      <!-- 考勤类 -->
+      <view class="kpi-category">
+        <view class="category-header">
+          <text class="category-name">考勤类（30%）</text>
+          <text class="category-score {{attendanceScore >= 80 ? 'good' : (attendanceScore >= 60 ? 'normal' : 'bad')}}">
+            {{attendanceScore}}分
+          </text>
+        </view>
+        <view class="kpi-items">
+          <view class="kpi-item">
+            <view class="kpi-left">
+              <text class="kpi-name">准时打卡率</text>
+              <text class="kpi-target">目标：≥95%</text>
+            </view>
+            <view class="kpi-right">
+              <view class="progress-bar">
+                <view class="progress-fill" style="width: {{onTimeRate}}%; background: {{onTimeRate >= 95 ? '#52c41a' : '#faad14'}};"></view>
+              </view>
+              <text class="kpi-value">{{onTimeRate}}%</text>
+            </view>
+          </view>
+          <view class="kpi-item">
+            <view class="kpi-left">
+              <text class="kpi-name">迟到次数</text>
+            </view>
+            <view class="kpi-right">
+              <text class="kpi-value {{lateCount > 0 ? 'warning' : ''}}">{{lateCount}}次</text>
+            </view>
+          </view>
+          <view class="kpi-item">
+            <view class="kpi-left">
+              <text class="kpi-name">缺卡次数</text>
+            </view>
+            <view class="kpi-right">
+              <text class="kpi-value {{absentCount > 0 ? 'warning' : ''}}">{{absentCount}}次</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 效率类 -->
+      <view class="kpi-category">
+        <view class="category-header">
+          <text class="category-name">效率类（40%）</text>
+          <text class="category-score {{efficiencyScore >= 80 ? 'good' : (efficiencyScore >= 60 ? 'normal' : 'bad')}}">
+            {{efficiencyScore}}分
+          </text>
+        </view>
+        <view class="kpi-items">
+          <view class="kpi-item">
+            <view class="kpi-left">
+              <text class="kpi-name">任务准时率</text>
+              <text class="kpi-target">目标：≥90%</text>
+            </view>
+            <view class="kpi-right">
+              <view class="progress-bar">
+                <view class="progress-fill" style="width: {{taskOnTimeRate}}%;"></view>
+              </view>
+              <text class="kpi-value">{{taskOnTimeRate}}%</text>
+            </view>
+          </view>
+          <view class="kpi-item">
+            <view class="kpi-left">
+              <text class="kpi-name">平均布置时间</text>
+              <text class="kpi-target">标准：2.5h</text>
+            </view>
+            <view class="kpi-right">
+              <text class="kpi-value">{{avgSetupTime}}h</text>
+            </view>
+          </view>
+          <view class="kpi-item">
+            <view class="kpi-left">
+              <text class="kpi-name">超时任务</text>
+            </view>
+            <view class="kpi-right">
+              <text class="kpi-value {{overtimeTasks > 0 ? 'warning' : ''}}">{{overtimeTasks}}单</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 质量类 -->
+      <view class="kpi-category">
+        <view class="category-header">
+          <text class="category-name">质量类（20%）</text>
+          <text class="category-score {{qualityScore >= 80 ? 'good' : (qualityScore >= 60 ? 'normal' : 'bad')}}">
+            {{qualityScore}}分
+          </text>
+        </view>
+        <view class="kpi-items">
+          <view class="kpi-item">
+            <view class="kpi-left">
+              <text class="kpi-name">客户投诉</text>
+            </view>
+            <view class="kpi-right">
+              <text class="kpi-value {{complaintCount > 0 ? 'error' : ''}}">{{complaintCount}}次</text>
+            </view>
+          </view>
+          <view class="kpi-item">
+            <view class="kpi-left">
+              <text class="kpi-name">物品损坏</text>
+            </view>
+            <view class="kpi-right">
+              <text class="kpi-value {{damageCount > 0 ? 'warning' : ''}}">{{damageCount}}次</text>
+            </view>
+          </view>
+          <view class="kpi-item">
+            <view class="kpi-left">
+              <text class="kpi-name">返工次数</text>
+            </view>
+            <view class="kpi-right">
+              <text class="kpi-value {{reworkCount > 0 ? 'warning' : ''}}">{{reworkCount}}次</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 客户评价类 -->
+      <view class="kpi-category">
+        <view class="category-header">
+          <text class="category-name">客户评价类（10%）</text>
+          <text class="category-score {{ratingScore >= 80 ? 'good' : (ratingScore >= 60 ? 'normal' : 'bad')}}">
+            {{ratingScore}}分
+          </text>
+        </view>
+        <view class="kpi-items">
+          <view class="kpi-item">
+            <view class="kpi-left">
+              <text class="kpi-name">平均评分</text>
+            </view>
+            <view class="kpi-right">
+              <view class="stars">
+                <text class="star {{index < avgRating ? 'active' : ''}}" wx:for="[1,2,3,4,5]" wx:key="index">★</text>
+              </view>
+              <text class="kpi-value">{{avgRating}}分</text>
+            </view>
+          </view>
+          <view class="kpi-item">
+            <view class="kpi-left">
+              <text class="kpi-name">好评率</text>
+            </view>
+            <view class="kpi-right">
+              <text class="kpi-value">{{positiveRate}}%</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 趋势图表 -->
+  <view class="card">
+    <view class="card-header">
+      <view class="header-left">
+        <text class="header-icon">📈</text>
+        <text class="card-title">效率趋势</text>
+      </view>
+    </view>
+    <view class="chart-container">
+      <view class="chart-y-axis">
+        <text wx:for="[100, 80, 60, 40, 20, 0]" wx:key="*this">{{item}}</text>
+      </view>
+      <view class="chart-bars">
+        <view class="chart-bar-wrapper" wx:for="{{trendData}}" wx:key="date">
+          <view class="chart-bar" style="height: {{item.value}}%;">
+            <view class="bar-fill {{item.value >= 80 ? 'good' : (item.value >= 60 ? 'normal' : 'bad')}}"></view>
+          </view>
+          <text class="bar-label">{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 同组对比 -->
+  <view class="card">
+    <view class="card-header">
+      <view class="header-left">
+        <text class="header-icon">🏆</text>
+        <text class="card-title">同组对比</text>
+      </view>
+    </view>
+    <view class="compare-list">
+      <view class="compare-item {{item.isMe ? 'is-me' : ''}}" wx:for="{{teamRankings}}" wx:key="id">
+        <view class="rank-num">{{index + 1}}</view>
+        <view class="member-info">
+          <view class="member-avatar">{{item.name[0]}}</view>
+          <text class="member-name">{{item.name}} {{item.isMe ? '(我)' : ''}}</text>
+        </view>
+        <view class="member-score">
+          <text class="score-value">{{item.score}}分</text>
+          <view class="score-bar">
+            <view class="score-fill" style="width: {{item.score}}%;"></view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

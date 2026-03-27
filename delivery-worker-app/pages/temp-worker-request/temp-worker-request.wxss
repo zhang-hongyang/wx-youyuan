@@ -1,0 +1,366 @@
+/* pages/temp-worker-request/temp-worker-request.wxss */
+
+/* 订单卡片 */
+.order-card {
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  color: #ffffff;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.order-no {
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.order-scale {
+  font-size: 22rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.order-scale.scale-large {
+  background: rgba(255, 77, 79, 0.3);
+}
+
+.order-scale.scale-medium {
+  background: rgba(250, 173, 20, 0.3);
+}
+
+.order-scale.scale-small {
+  background: rgba(82, 196, 26, 0.3);
+}
+
+.order-info {
+  display: flex;
+  gap: 30rpx;
+}
+
+.info-item {
+  font-size: 26rpx;
+  opacity: 0.9;
+}
+
+/* 数量选择器 */
+.count-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40rpx;
+  padding: 30rpx 0;
+}
+
+.count-btn {
+  width: 72rpx;
+  height: 72rpx;
+  background: #f5f5f5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  color: #333333;
+  font-weight: 300;
+}
+
+.count-btn.disabled {
+  background: #e8e8e8;
+  color: #cccccc;
+}
+
+.count-value {
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #1890ff;
+  min-width: 140rpx;
+  text-align: center;
+}
+
+.count-hint {
+  text-align: center;
+  font-size: 26rpx;
+  color: #999999;
+  margin-top: 16rpx;
+}
+
+/* 时长选择 */
+.hours-selector {
+  display: flex;
+  gap: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.hour-option {
+  flex: 1;
+  padding: 24rpx 0;
+  text-align: center;
+  background: #f5f5f5;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: #666666;
+  border: 2rpx solid transparent;
+}
+
+.hour-option.active {
+  background: #e6f7ff;
+  color: #1890ff;
+  border-color: #1890ff;
+  font-weight: 500;
+}
+
+.custom-hours {
+  margin-bottom: 20rpx;
+}
+
+.custom-hours input {
+  width: 100%;
+  height: 90rpx;
+  background: #f8f8f8;
+  border-radius: 12rpx;
+  padding: 0 24rpx;
+  font-size: 32rpx;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.toggle-custom {
+  text-align: center;
+  padding: 16rpx 0;
+}
+
+.toggle-custom text {
+  font-size: 26rpx;
+  color: #1890ff;
+}
+
+/* 原因选择 */
+.reason-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.reason-option {
+  padding: 16rpx 30rpx;
+  background: #f5f5f5;
+  border-radius: 32rpx;
+  font-size: 26rpx;
+  color: #666666;
+  border: 2rpx solid transparent;
+}
+
+.reason-option.active {
+  background: #e6f7ff;
+  color: #1890ff;
+  border-color: #1890ff;
+}
+
+.custom-reason {
+  width: 100%;
+  height: 160rpx;
+  background: #f8f8f8;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  font-size: 28rpx;
+  box-sizing: border-box;
+}
+
+/* 提醒卡片 */
+.notice-card {
+  background: #f8f8f8;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-top: 20rpx;
+}
+
+.notice-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.notice-icon {
+  font-size: 36rpx;
+  margin-right: 12rpx;
+}
+
+.notice-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
+.notice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.notice-item {
+  display: flex;
+  align-items: flex-start;
+  font-size: 26rpx;
+  color: #666666;
+  line-height: 1.5;
+}
+
+.notice-dot {
+  width: 12rpx;
+  height: 12rpx;
+  background: #1890ff;
+  border-radius: 50%;
+  margin-right: 16rpx;
+  margin-top: 10rpx;
+  flex-shrink: 0;
+}
+
+/* 费用卡片 */
+.cost-card {
+  background: #fffbe6;
+  border: 2rpx solid #ffe58f;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-top: 20rpx;
+}
+
+.cost-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cost-label {
+  font-size: 28rpx;
+  color: #666666;
+}
+
+.cost-value {
+  text-align: right;
+}
+
+.cost-amount {
+  display: block;
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #faad14;
+}
+
+.cost-unit {
+  font-size: 22rpx;
+  color: #999999;
+  margin-top: 4rpx;
+}
+
+/* 提交按钮 */
+.submit-btn {
+  width: calc(100% - 40rpx);
+  height: 96rpx;
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  color: #ffffff;
+  border-radius: 48rpx;
+  font-size: 34rpx;
+  font-weight: 500;
+  margin: 40rpx 20rpx;
+  box-shadow: 0 8rpx 24rpx rgba(24, 144, 255, 0.35);
+}
+
+.submit-btn.disabled {
+  background: #d9d9d9;
+  box-shadow: none;
+}
+
+.submit-btn::after {
+  border: none;
+}
+
+/* 历史记录 */
+.history-section {
+  margin-top: 20rpx;
+  padding: 0 20rpx;
+}
+
+.section-header {
+  margin-bottom: 20rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
+.history-list {
+  margin-bottom: 40rpx;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.history-main {
+  flex: 1;
+}
+
+.history-order {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #333333;
+  margin-bottom: 8rpx;
+}
+
+.history-count {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.history-side {
+  text-align: right;
+}
+
+.status-tag {
+  font-size: 22rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 8rpx;
+  margin-bottom: 8rpx;
+  display: inline-block;
+}
+
+.status-tag.pending {
+  background: #fffbe6;
+  color: #d48806;
+}
+
+.status-tag.approved {
+  background: #f6ffed;
+  color: #52c41a;
+}
+
+.status-tag.rejected {
+  background: #fff1f0;
+  color: #ff4d4f;
+}
+
+.history-cost {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #faad14;
+}

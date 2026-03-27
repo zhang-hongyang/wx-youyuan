@@ -1,0 +1,75 @@
+<!--pages/temp-order-upload/temp-order-upload.wxml-->
+<view class="container">
+  <view class="notice-bar">
+    <text class="notice-icon">⚡</text>
+    <text class="notice-text">临时订单将立即通知所有员工，请确保信息准确</text>
+  </view>
+
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">客户信息</text>
+      <text class="required">*</text>
+    </view>
+    <view class="form-item">
+      <text class="form-label">客户名称</text>
+      <input type="text" placeholder="请输入客户名称" value="{{customerName}}" bindinput="onCustomerNameInput"/>
+    </view>
+    <view class="form-item">
+      <text class="form-label">联系电话</text>
+      <input type="number" placeholder="请输入联系电话" value="{{customerPhone}}" bindinput="onCustomerPhoneInput"/>
+    </view>
+    <view class="form-item">
+      <text class="form-label">配送地址</text>
+      <textarea placeholder="请输入详细配送地址" value="{{address}}" bindinput="onAddressInput"/>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">订单信息</text>
+    </view>
+    <view class="form-item">
+      <text class="form-label">预约时间</text>
+      <view class="time-picker">
+        <picker mode="date" value="{{orderDate}}" bindchange="onDateChange">
+          <view class="picker-value">{{orderDate || '选择日期'}}</view>
+        </picker>
+        <picker mode="time" value="{{orderTime}}" bindchange="onTimeChange">
+          <view class="picker-value">{{orderTime || '选择时间'}}</view>
+        </picker>
+      </view>
+    </view>
+    <view class="form-item">
+      <text class="form-label">紧急程度</text>
+      <view class="urgency-options">
+        <view class="urgency-option {{urgency === 'normal' ? 'selected' : ''}}" bindtap="selectUrgency" data-value="normal">
+          <text>普通</text>
+        </view>
+        <view class="urgency-option {{urgency === 'urgent' ? 'selected' : ''}}" bindtap="selectUrgency" data-value="urgent">
+          <text>紧急</text>
+        </view>
+        <view class="urgency-option {{urgency === 'immediate' ? 'selected' : ''}}" bindtap="selectUrgency" data-value="immediate">
+          <text>立即</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">货物清单</text>
+    </view>
+    <view class="goods-list">
+      <view class="goods-item" wx:for="{{goodsList}}" wx:key="index">
+        <input class="goods-name" placeholder="物品名称" value="{{item.name}}" bindinput="onGoodsNameInput" data-index="{{index}}"/>
+        <input class="goods-qty" type="number" placeholder="数量" value="{{item.qty}}" bindinput="onGoodsQtyInput" data-index="{{index}}"/>
+        <text class="delete-btn" bindtap="deleteGoods" data-index="{{index}}">×</text>
+      </view>
+      <button class="add-goods-btn" bindtap="addGoods">+ 添加物品</button>
+    </view>
+  </view>
+
+  <button class="submit-btn {{canSubmit ? '' : 'disabled'}}" bindtap="submitOrder" disabled="{{!canSubmit}}">
+    发布临时订单
+  </button>
+</view>

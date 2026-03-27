@@ -1,0 +1,143 @@
+<!--pages/attendance/attendance.wxml - 新考勤页面-->
+<view class="container">
+  <!-- 日期选择器 -->
+  <view class="date-selector">
+    <view class="date-arrow" bindtap="changeDate" data-direction="prev">‹</view>
+    <view class="current-date">
+      <text class="date-text">{{currentDate}}</text>
+      <text class="week-text">{{weekDay}}</text>
+    </view>
+    <view class="date-arrow {{isToday ? 'disabled' : ''}}" bindtap="changeDate" data-direction="next">›</view>
+  </view>
+
+  <!-- 考勤统计卡片 -->
+  <view class="stats-card">
+    <view class="stats-header">
+      <text class="stats-title">考勤统计</text>
+      <view class="overall-status {{attendanceStatus}}">
+        {{attendanceStatusText}}
+      </view>
+    </view>
+    <view class="stats-grid">
+      <view class="stats-item">
+        <text class="stats-num">{{todayTaskCount}}</text>
+        <text class="stats-label">今日订单</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-num">{{completedCount}}</text>
+        <text class="stats-label">已完成</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-num">{{lateCount}}</text>
+        <text class="stats-label">迟到次数</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-num">{{workHours}}h</text>
+        <text class="stats-label">工作时长</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 打卡记录 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">今日打卡</text>
+      <text class="card-subtitle" wx:if="{{isToday}}">今天</text>
+    </view>
+    
+    <!-- 上班打卡 -->
+    <view class="checkin-item {{records.work ? 'completed' : ''}}">
+      <view class="item-left">
+        <view class="type-icon work">🌅</view>
+        <view class="type-info">
+          <text class="type-name">上班打卡</text>
+          <text class="type-time">只需打卡一次，开启今天工作</text>
+        </view>
+      </view>
+      <view class="item-right" wx:if="{{records.work}}">
+        <text class="record-time">{{records.work.time}}</text>
+        <view class="record-status {{records.work.status}}">{{records.work.statusText}}</view>
+      </view>
+      <view class="item-right" wx:else>
+        <button class="mini-btn" bindtap="goToWorkCheckIn">去打卡</button>
+      </view>
+    </view>
+
+    <!-- 订单打卡记录 -->
+    <view class="order-checkins" wx:if="{{orderRecords.length > 0}}">
+      <view class="order-section-title">
+        <text>订单打卡记录</text>
+      </view>
+      
+      <view class="order-checkin-item" wx:for="{{orderRecords}}" wx:key="orderId">
+        <view class="order-info">
+          <text class="order-no">{{item.orderNo}}</text>
+          <text class="customer-name">{{item.customerName}}</text>
+        </view>
+        <view class="checkin-flow">
+          <view class="flow-step {{item.arriveTime ? 'completed' : ''}}">
+            <view class="step-dot"></view>
+            <text class="step-name">到达</text>
+            <text class="step-time">{{item.arriveTime || '--:--'}}</text>
+          </view>
+          <view class="flow-line {{item.completeTime ? 'completed' : ''}}"></view>
+          <view class="flow-step {{item.completeTime ? 'completed' : ''}}">
+            <view class="step-dot"></view>
+            <text class="step-name">完工</text>
+            <text class="step-time">{{item.completeTime || '--:--'}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-checkins" wx:if="{{!records.work && orderRecords.length === 0}}">
+      <text class="empty-icon">📭</text>
+      <text class="empty-text">今日暂无打卡记录</text>
+    </view>
+  </view>
+
+  <!-- 本周考勤日历 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">本周考勤</text>
+    </view>
+    <view class="week-calendar">
+      <view class="week-day {{item.isToday ? 'today' : ''}} {{item.hasCheckIn ? 'checked' : ''}}" 
+            wx:for="{{weekDays}}" 
+            wx:key="date"
+            bindtap="selectDate"
+            data-date="{{item.date}}">
+        <text class="day-name">{{item.dayName}}</text>
+        <text class="day-num">{{item.dayNum}}</text>
+        <view class="day-status {{item.status}}"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 考勤说明 -->
+  <view class="notice-card">
+    <view class="notice-header">
+      <text class="notice-icon">📋</text>
+      <text class="notice-title">打卡规则说明</text>
+    </view>
+    <view class="notice-content">
+      <view class="notice-item">
+        <text class="dot normal"></text>
+        <text>上班打卡：每天只需在第一个订单出发前在仓库打卡一次</text>
+      </view>
+      <view class="notice-item">
+        <text class="dot normal"></text>
+        <text>到达现场：每个订单到达现场后打卡（定位+拍照）</text>
+      </view>
+      <view class="notice-item">
+        <text class="dot normal"></text>
+        <text>完工打卡：每个订单完成后打卡（拍照确认）</text>
+      </view>
+      <view class="notice-item">
+        <text class="dot normal"></text>
+        <text>连续订单：完成一个订单后可直接前往下一个地点，无需返回仓库</text>
+      </view>
+    </view>
+  </view>
+</view>

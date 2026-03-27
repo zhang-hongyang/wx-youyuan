@@ -1,0 +1,185 @@
+<!--pages/temp-check-out/temp-check-out.wxml-->
+<view class="container">
+  <!-- 头部信息 -->
+  <view class="header-card">
+    <view class="worker-info">
+      <view class="worker-avatar">{{workerInfo.name[0]}}</view>
+      <view class="worker-detail">
+        <text class="worker-name">{{workerInfo.name}}</text>
+        <text class="worker-id">ID: {{workerInfo.id}}</text>
+      </view>
+    </view>
+    <view class="work-duration" wx:if="{{workDuration}}">
+      <text class="duration-label">本单工作时长</text>
+      <text class="duration-value">{{workDuration}} 小时</text>
+    </view>
+  </view>
+
+  <!-- 订单信息 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">当前订单</text>
+    </view>
+    <view class="order-info">
+      <view class="info-row">
+        <text class="info-label">订单编号</text>
+        <text class="info-value">{{orderInfo.orderNo}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">客户名称</text>
+        <text class="info-value">{{orderInfo.customerName}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">负责人</text>
+        <text class="info-value">{{orderInfo.supervisor}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">上班时间</text>
+        <text class="info-value">{{checkInTime}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 下班打卡 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">下班打卡</text>
+      <text class="required">*</text>
+    </view>
+    
+    <!-- 当前时间 -->
+    <view class="time-display">
+      <text class="time-label">下班时间</text>
+      <text class="time-value">{{currentTime}}</text>
+      <text class="date-value">{{currentDate}}</text>
+    </view>
+
+    <!-- 定位信息 -->
+    <view class="location-section">
+      <view class="section-title">
+        <text class="title-icon">📍</text>
+        <text>当前位置</text>
+      </view>
+      <view class="location-card">
+        <text class="location-address">{{location.address || '正在获取位置...'}}</text>
+        <view class="location-status {{location.verified ? 'verified' : 'pending'}}">
+          {{location.verified ? '✓ 位置已确认' : '定位中...'}}
+        </view>
+      </view>
+      <button class="refresh-btn" bindtap="refreshLocation">刷新位置</button>
+    </view>
+
+    <!-- 工作确认 -->
+    <view class="work-confirm">
+      <view class="section-title">
+        <text class="title-icon">✓</text>
+        <text>工作确认</text>
+      </view>
+      <checkbox-group bindchange="onWorkConfirmChange">
+        <label class="checkbox-item">
+          <checkbox value="completed" checked="{{workCompleted}}"/>
+          <text>我已完成分配的工作任务</text>
+        </label>
+        <label class="checkbox-item">
+          <checkbox value="tools" checked="{{toolsReturned}}"/>
+          <text>我已归还所有工具和设备</text>
+        </label>
+        <label class="checkbox-item">
+          <checkbox value="site" checked="{{siteCleaned}}"/>
+          <text>我已清理工作现场</text>
+        </label>
+      </checkbox-group>
+    </view>
+
+    <!-- 拍照打卡 -->
+    <view class="photo-section">
+      <view class="section-title">
+        <text class="title-icon">📷</text>
+        <text>工作现场照片</text>
+        <text class="required">*</text>
+      </view>
+      <view class="photo-hint">
+        <text>请拍摄工作完成后的现场照片，需清晰显示工作成果</text>
+      </view>
+      <view class="photo-grid">
+        <view class="photo-item" wx:for="{{photos}}" wx:key="index">
+          <image src="{{item}}" mode="aspectFill" bindtap="previewPhoto" data-index="{{index}}"/>
+          <view class="delete-btn" bindtap="deletePhoto" data-index="{{index}}">×</view>
+          <view class="photo-watermark">
+            <text>{{currentTime}}</text>
+            <text>{{workerInfo.name}}</text>
+          </view>
+        </view>
+        <view class="photo-item photo-add" bindtap="takePhoto" wx:if="{{photos.length < 4}}">
+          <text class="add-icon">📷</text>
+          <text class="add-text">添加照片</text>
+          <text class="add-hint">{{photos.length}}/4</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 工作评价 -->
+    <view class="feedback-section">
+      <view class="section-title">
+        <text class="title-icon">💬</text>
+        <text>工作反馈</text>
+        <text class="optional">（选填）</text>
+      </view>
+      <textarea placeholder="如有任何问题或建议，请在此反馈..." 
+                value="{{feedback}}"
+                bindinput="onFeedbackInput"
+                maxlength="200"/>
+      <text class="char-count">{{feedback.length}}/200</text>
+    </view>
+
+    <!-- 签字确认 -->
+    <view class="signature-section">
+      <view class="section-title">
+        <text class="title-icon">✍️</text>
+        <text>负责人签字确认</text>
+      </view>
+      <view class="signature-board">
+        <canvas type="2d" id="supervisorSign" class="signature-canvas" 
+                bindtouchstart="startSign" 
+                bindtouchmove="moveSign" 
+                bindtouchend="endSign"></canvas>
+        <view class="signature-placeholder" wx:if="{{!hasSignature}}">
+          <text>请负责人签字确认</text>
+        </view>
+      </view>
+      <view class="signature-actions">
+        <button class="clear-btn" bindtap="clearSignature">清除</button>
+        <button class="save-btn" bindtap="saveSignature">保存签名</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 费用结算 -->
+  <view class="settlement-card">
+    <view class="settlement-title">费用结算</view>
+    <view class="settlement-row">
+      <text class="settlement-label">工作时长</text>
+      <text class="settlement-value">{{workDuration || '--'}} 小时</text>
+    </view>
+    <view class="settlement-row">
+      <text class="settlement-label">单价</text>
+      <text class="settlement-value">¥{{hourlyRate}}/小时</text>
+    </view>
+    <view class="settlement-divider"></view>
+    <view class="settlement-row total">
+      <text class="settlement-label">预计收入</text>
+      <text class="settlement-value">¥{{estimatedIncome}}</text>
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <button class="submit-btn {{canSubmit ? '' : 'disabled'}}" bindtap="submitCheckOut" disabled="{{!canSubmit || isSubmitting}}">
+    <text wx:if="{{!isSubmitting}}">确认下班打卡</text>
+    <text wx:else>提交中...</text>
+  </button>
+
+  <!-- 底部提示 -->
+  <view class="footer-tips">
+    <text>⚠️ 下班打卡后，本单工作结束，费用将在审核后结算</text>
+  </view>
+</view>

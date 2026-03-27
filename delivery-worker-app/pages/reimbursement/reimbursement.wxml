@@ -1,0 +1,205 @@
+<!--pages/reimbursement/reimbursement.wxml-->
+<view class="container">
+  <!-- 关联订单 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">关联订单</text>
+      <text class="required">*</text>
+    </view>
+    <picker bindchange="onOrderChange" value="{{selectedOrderIndex}}" range="{{orders}}" range-key="orderNo">
+      <view class="picker-value {{selectedOrderIndex < 0 ? 'placeholder' : ''}}">
+        <view class="order-info" wx:if="{{selectedOrderIndex >= 0}}">
+          <text class="order-no">{{orders[selectedOrderIndex].orderNo}}</text>
+          <text class="order-customer">{{orders[selectedOrderIndex].customerName}}</text>
+        </view>
+        <text wx:else>请选择关联的送货单</text>
+        <text class="arrow">></text>
+      </view>
+    </picker>
+  </view>
+
+  <!-- 报销类型 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">报销类型</text>
+      <text class="required">*</text>
+    </view>
+    <view class="type-grid">
+      <view class="type-item {{expenseType === item.type ? 'active' : ''}} {{item.requireInvoice ? 'require-invoice' : ''}}" 
+            wx:for="{{expenseTypes}}" 
+            wx:key="type"
+            bindtap="selectExpenseType"
+            data-type="{{item.type}}">
+        <text class="type-icon">{{item.icon}}</text>
+        <text class="type-name">{{item.name}}</text>
+        <view class="invoice-tag" wx:if="{{item.requireInvoice}}">需发票</view>
+        <view class="no-invoice-tag" wx:if="{{!item.requireInvoice}}">免发票</view>
+      </view>
+    </view>
+    
+    <!-- 提示信息 -->
+    <view class="invoice-notice" wx:if="{{selectedExpenseType.requireInvoice}}">
+      <text class="notice-icon">⚠️</text>
+      <text class="notice-text">{{selectedExpenseType.name}}必须上传发票照片，否则不予报销</text>
+    </view>
+    <view class="invoice-notice no-invoice" wx:if="{{!selectedExpenseType.requireInvoice}}">
+      <text class="notice-icon">✓</text>
+      <text class="notice-text">{{selectedExpenseType.name}}可凭账单截图报销，无需发票</text>
+    </view>
+  </view>
+
+  <!-- 费用明细 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">费用明细</text>
+    </view>
+    
+    <!-- 费用金额 -->
+    <view class="form-item">
+      <text class="form-label">费用金额</text>
+      <view class="amount-input">
+        <text class="currency">¥</text>
+        <input type="digit" placeholder="0.00" value="{{amount}}" bindinput="onAmountInput"/>
+      </view>
+    </view>
+
+    <!-- 费用日期 -->
+    <view class="form-item">
+      <text class="form-label">费用日期</text>
+      <picker mode="date" value="{{expenseDate}}" bindchange="onDateChange">
+        <view class="picker-value">
+          {{expenseDate || '请选择日期'}}
+          <text class="arrow">></text>
+        </view>
+      </picker>
+    </view>
+
+    <!-- 费用说明 -->
+    <view class="form-item">
+      <text class="form-label">费用说明</text>
+      <textarea placeholder="请说明费用产生的具体情况..." value="{{description}}" bindinput="onDescriptionInput" maxlength="200"/>
+      <text class="char-count">{{description.length}}/200</text>
+    </view>
+  </view>
+
+  <!-- 发票上传 -->
+  <view class="card">
+    <view class="card-header">
+      <view class="header-left">
+        <text class="card-title">发票照片</text>
+        <text class="required" wx:if="{{selectedExpenseType.requireInvoice}}">*</text>
+        <text class="optional" wx:if="{{!selectedExpenseType.requireInvoice}}">（选填）</text>
+      </view>
+    </view>
+    
+    <view class="upload-section">
+      <view class="upload-list">
+        <view class="upload-item" wx:for="{{invoices}}" wx:key="index">
+          <image src="{{item}}" mode="aspectFill" bindtap="previewImage" data-list="invoices" data-index="{{index}}"/>
+          <view class="delete-btn" bindtap="deleteImage" data-list="invoices" data-index="{{index}}">×</view>
+        </view>
+        <view class="upload-btn" bindtap="chooseInvoice" wx:if="{{invoices.length < 4}}">
+          <text class="upload-icon">📄</text>
+          <text class="upload-text">添加发票</text>
+          <text class="upload-hint">{{invoices.length}}/4</text>
+        </view>
+      </view>
+    </view>
+    
+    <view class="upload-tips" wx:if="{{selectedExpenseType.requireInvoice && invoices.length === 0}}">
+      <text class="tips-icon">⚠️</text>
+      <text>请上传发票照片，电子发票请上传截图</text>
+    </view>
+  </view>
+
+  <!-- 账单截图 -->
+  <view class="card">
+    <view class="card-header">
+      <view class="header-left">
+        <text class="card-title">账单/支付截图</text>
+        <text class="required">*</text>
+      </view>
+    </view>
+    
+    <view class="upload-section">
+      <view class="upload-list">
+        <view class="upload-item" wx:for="{{billImages}}" wx:key="index">
+          <image src="{{item}}" mode="aspectFill" bindtap="previewImage" data-list="billImages" data-index="{{index}}"/>
+          <view class="delete-btn" bindtap="deleteImage" data-list="billImages" data-index="{{index}}">×</view>
+        </view>
+        <view class="upload-btn" bindtap="chooseBillImage" wx:if="{{billImages.length < 4}}">
+          <text class="upload-icon">📷</text>
+          <text class="upload-text">添加截图</text>
+          <text class="upload-hint">{{billImages.length}}/4</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 其他凭证 -->
+  <view class="card">
+    <view class="card-header">
+      <view class="header-left">
+        <text class="card-title">其他凭证</text>
+        <text class="optional">（选填）</text>
+      </view>
+    </view>
+    
+    <view class="upload-section">
+      <view class="upload-list">
+        <view class="upload-item" wx:for="{{otherImages}}" wx:key="index">
+          <image src="{{item}}" mode="aspectFill" bindtap="previewImage" data-list="otherImages" data-index="{{index}}"/>
+          <view class="delete-btn" bindtap="deleteImage" data-list="otherImages" data-index="{{index}}">×</view>
+        </view>
+        <view class="upload-btn" bindtap="chooseOtherImage" wx:if="{{otherImages.length < 4}}">
+          <text class="upload-icon">📎</text>
+          <text class="upload-text">添加凭证</text>
+          <text class="upload-hint">{{otherImages.length}}/4</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 费用汇总 -->
+  <view class="summary-card">
+    <view class="summary-row">
+      <text class="summary-label">本次报销金额</text>
+      <text class="summary-value">¥{{amount || '0.00'}}</text>
+    </view>
+    <view class="summary-notice" wx:if="{{selectedExpenseType.requireInvoice && invoices.length === 0}}">
+      <text>⚠️ 未上传发票，提交后可能会被拒绝</text>
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <button class="submit-btn {{canSubmit ? '' : 'disabled'}}" bindtap="submitReimbursement" disabled="{{!canSubmit || isSubmitting}}">
+    <text wx:if="{{!isSubmitting}}">提交报销申请</text>
+    <text wx:else>提交中...</text>
+  </button>
+
+  <!-- 历史记录 -->
+  <view class="history-section">
+    <view class="section-header">
+      <text class="section-title">报销记录</text>
+      <text class="view-all" bindtap="viewAllHistory">查看全部 ></text>
+    </view>
+    <view class="history-list">
+      <view class="history-item {{item.status}}" wx:for="{{reimbursementHistory}}" wx:key="id">
+        <view class="history-icon">{{item.typeIcon}}</view>
+        <view class="history-content">
+          <view class="history-header">
+            <text class="history-type">{{item.typeName}}</text>
+            <text class="history-amount">¥{{item.amount}}</text>
+          </view>
+          <text class="history-order">{{item.orderNo}}</text>
+          <view class="history-footer">
+            <text class="history-date">{{item.date}}</text>
+            <view class="status-tag {{item.status}}">{{item.statusText}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="safe-area-bottom"></view>
+</view>

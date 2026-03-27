@@ -1,0 +1,48 @@
+# L1-02 Superpowers 需求规格 SPEC（全小程序多角色）
+
+更新时间：2026-03-27
+
+## 背景
+
+当前项目已具备执行者主流程，但角色分层、后端权限粒度、财务流程仍不完整。目标是采用 superpowers 工作法推进“全小程序多角色”重构。
+
+## 业务目标
+
+1. 管理者：查看项目、工人、运营数据；每日发布和审查项目。
+2. 执行者：维持现有配送执行主流程并持续可用。
+3. 财务：接收报销、审核报销、记录结果。
+4. 扩展能力：后续可新增更多角色而不大改主干代码。
+
+## 非目标（本阶段不做）
+
+1. 多级审批流。
+2. 复杂经营驾驶舱。
+3. 全量页面视觉重设计。
+
+## 约束
+
+1. 安全边界以后端权限为准，前端仅做可用性守卫。
+2. 每批改动必须同步三级文档。
+3. 执行者既有主流程不可回归。
+
+## 角色与权限结果要求
+
+1. 登录后按角色进入对应入口。
+2. 无权限页面不可访问。
+3. 高风险接口必须角色校验并产生日志。
+
+## 验收标准
+
+1. 管理者/执行者/财务三角色都能完成各自最小闭环。
+2. 越权请求被后端拒绝。
+3. 审计日志能回溯关键动作。
+4. 回归清单全部通过。
+
+## 需求证据文件
+
+1. delivery-worker-app/app.json
+2. delivery-worker-app/pages/login/login.js
+3. delivery-worker-app/pages/profile/profile.js
+4. delivery-worker-app/pages/reimbursement/reimbursement.js
+5. delivery-worker-app/cloudfunctions/api/index.js
+6. delivery-worker-app/MIN_REGRESSION_CHECKLIST.md

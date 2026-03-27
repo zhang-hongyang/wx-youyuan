@@ -1,0 +1,103 @@
+<!--pages/warehouse/warehouse.wxml-->
+<view class="container">
+  <!-- 统计概览 -->
+  <view class="stats-grid">
+    <view class="stats-item" bindtap="goToSchedule">
+      <text class="stats-num">{{todayOrders}}</text>
+      <text class="stats-label">今日订单</text>
+    </view>
+    <view class="stats-item" bindtap="goToInspection">
+      <text class="stats-num">{{pendingInspections}}</text>
+      <text class="stats-label">待验收</text>
+    </view>
+    <view class="stats-item" bindtap="goToRepair">
+      <text class="stats-num">{{pendingRepairs}}</text>
+      <text class="stats-label">待维修</text>
+    </view>
+    <view class="stats-item">
+      <text class="stats-num">{{lowStockItems}}</text>
+      <text class="stats-label">库存不足</text>
+    </view>
+  </view>
+
+  <!-- 快捷操作 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">快捷操作</text>
+    </view>
+    <view class="quick-grid">
+      <view class="quick-item" bindtap="goToSchedule">
+        <view class="quick-icon schedule">📅</view>
+        <text class="quick-name">订单排班</text>
+      </view>
+      <view class="quick-item" bindtap="goToTempUpload">
+        <view class="quick-icon temp">⚡</view>
+        <text class="quick-name">临时订单</text>
+      </view>
+      <view class="quick-item" bindtap="goToInspection">
+        <view class="quick-icon inspection">📋</view>
+        <text class="quick-name">验收管理</text>
+      </view>
+      <view class="quick-item" bindtap="goToRepair">
+        <view class="quick-icon repair">🔧</view>
+        <text class="quick-name">维修管理</text>
+      </view>
+      <view class="quick-item" bindtap="goToStats">
+        <view class="quick-icon stats">📊</view>
+        <text class="quick-name">统计报表</text>
+      </view>
+      <view class="quick-item" bindtap="goToInventory">
+        <view class="quick-icon inventory">📦</view>
+        <text class="quick-name">库存管理</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 今日订单 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">今日订单</text>
+      <text class="view-all" bindtap="goToSchedule">查看全部 ></text>
+    </view>
+    <view class="order-list">
+      <view class="order-item {{item.status}}" wx:for="{{todayOrderList}}" wx:key="id">
+        <view class="order-time">{{item.time}}</view>
+        <view class="order-content">
+          <text class="order-no">{{item.orderNo}}</text>
+          <text class="order-customer">{{item.customerName}}</text>
+          <view class="order-assign">
+            <text wx:if="{{item.assigned}}">{{item.staff}}</text>
+            <text wx:else class="unassigned">待安排</text>
+          </view>
+        </view>
+        <view class="order-status {{item.status}}">
+          {{item.statusText}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 库存预警 -->
+  <view class="card" wx:if="{{lowStockList.length > 0}}">
+    <view class="card-header">
+      <text class="card-title">库存预警</text>
+    </view>
+    <view class="stock-list">
+      <view class="stock-item" wx:for="{{lowStockList}}" wx:key="name">
+        <view class="stock-icon">{{item.icon}}</view>
+        <view class="stock-info">
+          <text class="stock-name">{{item.name}}</text>
+          <text class="stock-current">当前: {{item.current}} {{item.unit}}</text>
+        </view>
+        <view class="stock-min">
+          <text>最低: {{item.min}} {{item.unit}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 悬浮按钮 - 快速添加 -->
+<view class="fab-btn" bindtap="showQuickMenu">
+  <text class="fab-icon">+</text>
+</view>

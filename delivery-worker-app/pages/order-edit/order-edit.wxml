@@ -1,0 +1,291 @@
+<!--pages/order-edit/order-edit.wxml-->
+<view class="container">
+  <!-- 订单信息卡片 -->
+  <view class="order-info-card">
+    <view class="order-header">
+      <text class="order-no">{{orderInfo.orderNo}}</text>
+      <view class="order-status {{orderInfo.status}}">{{orderInfo.statusText}}</view>
+    </view>
+    <view class="order-detail">
+      <view class="detail-item">
+        <text class="label">客户</text>
+        <text class="value">{{orderInfo.customerName}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="label">地址</text>
+        <text class="value">{{orderInfo.address}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="label">时间</text>
+        <text class="value">{{orderInfo.scheduledTime}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="label">货物</text>
+        <text class="value">{{orderInfo.goodsCount}}件 · {{orderInfo.scale}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 人员安排 -->
+  <view class="card">
+    <view class="card-header">
+      <view class="header-left">
+        <text class="header-icon">👷</text>
+        <text class="card-title">人员安排</text>
+      </view>
+      <view class="header-right">
+        <text class="selected-count">已选 {{selectedStaff.length}} 人</text>
+      </view>
+    </view>
+
+    <!-- 正式员工 -->
+    <view class="staff-section">
+      <view class="section-title">
+        <text>正式员工</text>
+        <text class="staff-count">{{formalStaff.length}}人可选</text>
+      </view>
+      <view class="staff-list">
+        <view class="staff-item {{item.selected ? 'selected' : ''}} {{item.available ? '' : 'unavailable'}}" 
+              wx:for="{{formalStaff}}" 
+              wx:key="id"
+              bindtap="toggleStaff"
+              data-id="{{item.id}}"
+              data-type="formal">
+          <view class="staff-avatar">{{item.name[0]}}</view>
+          <view class="staff-info">
+            <text class="staff-name">{{item.name}}</text>
+            <text class="staff-meta">
+              {{item.skills.join('、')}} · 今日{{item.todayTasks}}单
+            </text>
+          </view>
+          <view class="staff-status">
+            <text class="status-badge {{item.available ? 'free' : 'busy'}}">
+              {{item.available ? '空闲' : '忙碌'}}
+            </text>
+          </view>
+          <view class="select-icon {{item.selected ? 'checked' : ''}}">
+            {{item.selected ? '✓' : ''}}
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 临时工 -->
+    <view class="staff-section">
+      <view class="section-title">
+        <text>临时工</text>
+        <text class="staff-count">{{tempStaff.length}}人可选</text>
+      </view>
+      <view class="staff-list">
+        <view class="staff-item {{item.selected ? 'selected' : ''}} {{item.available ? '' : 'unavailable'}}" 
+              wx:for="{{tempStaff}}" 
+              wx:key="id"
+              bindtap="toggleStaff"
+              data-id="{{item.id}}"
+              data-type="temp">
+          <view class="staff-avatar temp">{{item.name[0]}}</view>
+          <view class="staff-info">
+            <text class="staff-name">{{item.name}}</text>
+            <text class="staff-meta">临时工 · {{item.phone}}</text>
+          </view>
+          <view class="staff-status">
+            <text class="status-badge {{item.available ? 'free' : 'busy'}}">
+              {{item.available ? '空闲' : '忙碌'}}
+            </text>
+          </view>
+          <view class="select-icon {{item.selected ? 'checked' : ''}}">
+            {{item.selected ? '✓' : ''}}
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <button class="request-temp-btn" bindtap="requestMoreTemp">
+      <text class="btn-icon">+</text>
+      <text>申请更多临时工</text>
+    </button>
+  </view>
+
+  <!-- 车辆安排 -->
+  <view class="card">
+    <view class="card-header">
+      <view class="header-left">
+        <text class="header-icon">🚚</text>
+        <text class="card-title">车辆安排</text>
+      </view>
+    </view>
+
+    <!-- 自有车辆 -->
+    <view class="vehicle-section">
+      <view class="section-title">自有车辆</view>
+      <view class="vehicle-list">
+        <view class="vehicle-item {{selectedVehicle === item.id ? 'selected' : ''}} {{item.available ? '' : 'unavailable'}}" 
+              wx:for="{{ownVehicles}}" 
+              wx:key="id"
+              bindtap="selectVehicle"
+              data-id="{{item.id}}"
+              data-type="own">
+          <view class="vehicle-icon">🚐</view>
+          <view class="vehicle-info">
+            <text class="vehicle-plate">{{item.plate}}</text>
+            <text class="vehicle-type">{{item.type}} · {{item.capacity}}</text>
+          </view>
+          <view class="vehicle-status">
+            <text class="status-badge {{item.available ? 'free' : 'busy'}}">
+              {{item.available ? '空闲' : '外出中'}}
+            </text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 外部车辆 -->
+    <view class="vehicle-section">
+      <view class="section-title">
+        <text>外部叫车</text>
+        <text class="subtitle">货拉拉等第三方</text>
+      </view>
+      <view class="external-vehicle">
+        <view class="external-option {{selectedVehicleType === 'huolala' ? 'selected' : ''}}" 
+              bindtap="selectExternalVehicle"
+              data-type="huolala">
+          <view class="external-icon">🚚</view>
+          <text class="external-name">货拉拉</text>
+          <text class="external-desc">按里程计费</text>
+        </view>
+        <view class="external-option {{selectedVehicleType === 'didi' ? 'selected' : ''}}" 
+              bindtap="selectExternalVehicle"
+              data-type="didi">
+          <view class="external-icon">🚗</view>
+          <text class="external-name">滴滴货运</text>
+          <text class="external-desc">快速响应</text>
+        </view>
+        <view class="external-option {{selectedVehicleType === 'other' ? 'selected' : ''}}" 
+              bindtap="selectExternalVehicle"
+              data-type="other">
+          <view class="external-icon">📝</view>
+          <text class="external-name">其他</text>
+          <text class="external-desc">手动填写</text>
+        </view>
+      </view>
+      
+      <!-- 外部车辆备注 -->
+      <view class="external-remark" wx:if="{{selectedVehicleType === 'other'}}">
+        <input type="text" placeholder="请输入车辆信息（车牌/司机/电话）" 
+               value="{{externalVehicleRemark}}"
+               bindinput="onExternalRemarkInput"/>
+      </view>
+    </view>
+  </view>
+
+  <!-- 物资配备 -->
+  <view class="card">
+    <view class="card-header">
+      <view class="header-left">
+        <text class="header-icon">📦</text>
+        <text class="card-title">物资配备</text>
+      </view>
+    </view>
+    <view class="inventory-list">
+      <view class="inventory-item">
+        <view class="item-info">
+          <text class="item-icon">🛒</text>
+          <view class="item-detail">
+            <text class="item-name">板车</text>
+            <text class="item-stock">库存: {{inventory.carts}}辆</text>
+          </view>
+        </view>
+        <view class="item-control">
+          <view class="quantity-btn {{assignedCarts <= 0 ? 'disabled' : ''}}" bindtap="decreaseCarts">-</view>
+          <text class="quantity-value">{{assignedCarts}}</text>
+          <view class="quantity-btn {{assignedCarts >= inventory.carts ? 'disabled' : ''}}" bindtap="increaseCarts">+</view>
+        </view>
+      </view>
+      <view class="inventory-item">
+        <view class="item-info">
+          <text class="item-icon">📦</text>
+          <view class="item-detail">
+            <text class="item-name">运输笼</text>
+            <text class="item-stock">库存: {{inventory.cages}}个</text>
+          </view>
+        </view>
+        <view class="item-control">
+          <view class="quantity-btn {{assignedCages <= 0 ? 'disabled' : ''}}" bindtap="decreaseCages">-</view>
+          <text class="quantity-value">{{assignedCages}}</text>
+          <view class="quantity-btn {{assignedCages >= inventory.cages ? 'disabled' : ''}}" bindtap="increaseCages">+</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 时间预算 -->
+  <view class="card">
+    <view class="card-header">
+      <view class="header-left">
+        <text class="header-icon">⏱️</text>
+        <text class="card-title">时间预算</text>
+      </view>
+    </view>
+    <view class="time-budget">
+      <view class="budget-item">
+        <text class="budget-label">预计装车时间</text>
+        <picker mode="selector" range="{{timeOptions}}" value="{{loadTimeIndex}}" bindchange="onLoadTimeChange">
+          <view class="budget-value">
+            {{timeOptions[loadTimeIndex]}}
+            <text class="arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+      <view class="budget-item">
+        <text class="budget-label">预计路途时间</text>
+        <picker mode="selector" range="{{timeOptions}}" value="{{travelTimeIndex}}" bindchange="onTravelTimeChange">
+          <view class="budget-value">
+            {{timeOptions[travelTimeIndex]}}
+            <text class="arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+      <view class="budget-item">
+        <text class="budget-label">预计布置时间</text>
+        <picker mode="selector" range="{{setupTimeOptions}}" value="{{setupTimeIndex}}" bindchange="onSetupTimeChange">
+          <view class="budget-value">
+            {{setupTimeOptions[setupTimeIndex]}}
+            <text class="arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+      <view class="budget-total">
+        <text class="total-label">预计总时长</text>
+        <text class="total-value">{{totalEstimatedHours}}小时</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 备注 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">安排备注</text>
+    </view>
+    <textarea class="remark-input" 
+              placeholder="请输入特殊要求或注意事项..."
+              value="{{remark}}"
+              bindinput="onRemarkInput"
+              maxlength="200"/>
+    <text class="char-count">{{remark.length}}/200</text>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="footer-bar">
+    <view class="footer-content">
+      <view class="summary">
+        <text class="summary-item">人员: {{selectedStaff.length}}人</text>
+        <text class="summary-item">车辆: {{selectedVehicle ? '1辆' : '待选'}}</text>
+        <text class="summary-item">预计: {{totalEstimatedHours}}h</text>
+      </view>
+      <button class="submit-btn {{canSubmit ? '' : 'disabled'}}" bindtap="submitArrangement" disabled="{{!canSubmit}}">
+        {{orderInfo.assigned ? '更新安排' : '确认安排'}}
+      </button>
+    </view>
+    <view class="safe-area-bottom"></view>
+  </view>
+</view>

@@ -1,0 +1,243 @@
+<!--pages/index/index.wxml - 新工作台-->
+<view class="container">
+  <!-- 用户信息卡片 -->
+  <view class="user-card">
+    <view class="user-info">
+      <view class="avatar">
+        <text class="avatar-text">{{userInfo.name ? userInfo.name[0] : '?'}}</text>
+      </view>
+      <view class="user-detail">
+        <view class="user-name-row">
+          <text class="user-name">{{userInfo.name || '未登录'}}</text>
+          <view class="user-tag {{userInfo.userType === 'formal' ? 'tag-formal' : 'tag-temp'}}">
+            {{userInfo.userType === 'formal' ? '正式员工' : '临时工'}}
+          </view>
+        </view>
+        <text class="user-id">工号：{{userInfo.employeeId || userInfo.tempId || '-'}}</text>
+        <view class="skills" wx:if="{{userInfo.skills && userInfo.skills.length > 0}}">
+          <text class="skill-tag" wx:for="{{userInfo.skills}}" wx:key="index">{{item}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="quick-stats">
+      <view class="stat-item">
+        <text class="stat-num">{{todayStats.completed}}</text>
+        <text class="stat-label">今日完成</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-num">{{todayStats.pending}}</text>
+        <text class="stat-label">待完成</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-num">{{todayStats.doing}}</text>
+        <text class="stat-label">进行中</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 今日工作状态 -->
+  <view class="card">
+    <view class="card-header">
+      <view class="header-left">
+        <text class="header-icon">📍</text>
+        <text class="card-title">今日工作</text>
+      </view>
+      <view class="header-right" bindtap="goToAttendance">
+        <text class="link-text">查看详情</text>
+        <text class="arrow">></text>
+      </view>
+    </view>
+    
+    <!-- 上班打卡状态 -->
+    <view class="work-status-bar {{hasWorkCheckIn ? 'checked' : ''}}">
+      <view class="status-icon">{{hasWorkCheckIn ? '✓' : '🌅'}}</view>
+      <view class="status-info">
+        <text class="status-title">{{hasWorkCheckIn ? '已开始工作' : '尚未上班打卡'}}</text>
+        <text class="status-desc">{{hasWorkCheckIn ? '可以开始处理订单' : '请在第一个订单出发前在仓库打卡'}}</text>
+      </view>
+      <button class="status-btn {{hasWorkCheckIn ? 'disabled' : ''}}" 
+              bindtap="goToWorkCheckIn"
+              disabled="{{hasWorkCheckIn}}">
+        {{hasWorkCheckIn ? '已打卡' : '去打卡'}}
+      </button>
+    </view>
+
+    <!-- 当前订单 -->
+    <view class="current-order-section" wx:if="{{currentOrder}}">
+      <view class="section-subtitle">当前订单</view>
+      <view class="current-order-card">
+        <view class="order-main">
+          <text class="order-no">{{currentOrder.orderNo}}</text>
+          <text class="customer-name">{{currentOrder.customerName}}</text>
+          <text class="order-address">📍 {{currentOrder.address}}</text>
+        </view>
+        <view class="order-actions">
+          <button class="action-btn arrive {{currentOrder.hasArrive ? 'completed' : ''}}" 
+                  bindtap="goToArriveCheckIn"
+                  disabled="{{currentOrder.hasArrive}}">
+            <text class="btn-icon">📍</text>
+            <text>{{currentOrder.hasArrive ? '已到达' : '到达打卡'}}</text>
+          </button>
+          <button class="action-btn complete {{currentOrder.hasComplete ? 'completed' : ''}}"
+                  bindtap="goToCompleteCheckIn"
+                  disabled="{{!currentOrder.hasArrive || currentOrder.hasComplete}}">
+            <text class="btn-icon">✅</text>
+            <text>{{currentOrder.hasComplete ? '已完成' : '完工打卡'}}</text>
+          </button>
+        </view>
+      </view>
+    </view>
+
+    <!-- 下一个订单提示 -->
+    <view class="next-order-tip" wx:if="{{!currentOrder && nextOrder}}">
+      <text class="tip-icon">➡️</text>
+      <view class="tip-content">
+        <text class="tip-title">下一个订单</text>
+        <text class="tip-order">{{nextOrder.orderNo}} · {{nextOrder.customerName}}</text>
+      </view>
+      <button class="tip-btn" bindtap="startNextOrder" data-id="{{nextOrder.id}}">
+        开始
+      </button>
+    </view>
+  </view>
+
+  <!-- 今日任务 -->
+  <view class="card">
+    <view class="card-header">
+      <view class="header-left">
+        <text class="header-icon">📋</text>
+        <text class="card-title">今日任务</text>
+        <text class="task-count">({{todayTasks.length}})</text>
+      </view>
+    </view>
+    
+    <view class="task-list" wx:if="{{todayTasks.length > 0}}">
+      <view class="task-item {{item.status}}" wx:for="{{todayTasks}}" wx:key="id">
+        <view class="task-status-bar {{item.status}}"></view>
+        <view class="task-content">
+          <view class="task-header">
+            <text class="task-no">{{item.orderNo}}</text>
+            <view class="status-tag {{item.status}}">
+              {{item.statusText}}
+            </view>
+          </view>
+          <view class="task-info">
+            <text class="customer-name">{{item.customerName}}</text>
+            <text class="customer-address">{{item.address}}</text>
+          </view>
+          <view class="task-footer">
+            <view class="task-time">
+              <text class="time-icon">⏰</text>
+              <text>{{item.scheduledTime}}</text>
+            </view>
+            <view class="task-goods">
+              <text class="goods-icon">📦</text>
+              <text>{{item.goodsCount}}件</text>
+            </view>
+          </view>
+        </view>
+        <view class="task-actions">
+          <button class="mini-btn" wx:if="{{item.status === 'pending'}}" bindtap="startTask" data-id="{{item.id}}">
+            开始
+          </button>
+          <button class="mini-btn secondary" wx:if="{{item.status === 'doing'}}" bindtap="viewTask" data-id="{{item.id}}">
+            查看
+          </button>
+        </view>
+      </view>
+    </view>
+    
+    <view class="empty-tasks" wx:else>
+      <text class="empty-icon">📭</text>
+      <text class="empty-text">今日暂无任务</text>
+    </view>
+  </view>
+
+  <!-- 快捷功能 -->
+  <view class="card">
+    <view class="card-header">
+      <view class="header-left">
+        <text class="header-icon">⚡</text>
+        <text class="card-title">快捷功能</text>
+      </view>
+    </view>
+    
+    <view class="quick-actions">
+      <view class="action-item" bindtap="goToProblem">
+        <view class="action-icon problem">⚠️</view>
+        <text class="action-name">问题上报</text>
+      </view>
+      <view class="action-item" bindtap="goToReimbursement">
+        <view class="action-icon reimbursement">🧾</view>
+        <text class="action-name">费用报销</text>
+      </view>
+      <view class="action-item" bindtap="goToTracking">
+        <view class="action-icon tracking">🗺️</view>
+        <text class="action-name">行程共享</text>
+      </view>
+      <view class="action-item" bindtap="goToTempRequest">
+        <view class="action-icon temp">👥</view>
+        <text class="action-name">申请临时工</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 绩效概览 -->
+  <view class="card" wx:if="{{userInfo.userType === 'formal'}}">
+    <view class="card-header">
+      <view class="header-left">
+        <text class="header-icon">🏆</text>
+        <text class="card-title">本月绩效</text>
+      </view>
+      <view class="header-right" bindtap="goToPerformance">
+        <text class="link-text">查看详情</text>
+        <text class="arrow">></text>
+      </view>
+    </view>
+    
+    <view class="performance-overview">
+      <view class="score-circle">
+        <view class="circle-inner">
+          <text class="score-num">{{monthlyScore}}</text>
+          <text class="score-label">综合得分</text>
+        </view>
+        <view class="score-rank">{{performanceLevel}}级</view>
+      </view>
+      
+      <view class="performance-stats">
+        <view class="perf-item">
+          <text class="perf-label">考勤</text>
+          <view class="perf-bar">
+            <view class="perf-fill" style="width: {{attendanceScore}}%"></view>
+          </view>
+          <text class="perf-value">{{attendanceScore}}分</text>
+        </view>
+        <view class="perf-item">
+          <text class="perf-label">效率</text>
+          <view class="perf-bar">
+            <view class="perf-fill" style="width: {{efficiencyScore}}%"></view>
+          </view>
+          <text class="perf-value">{{efficiencyScore}}分</text>
+        </view>
+        <view class="perf-item">
+          <text class="perf-label">质量</text>
+          <view class="perf-bar">
+            <view class="perf-fill" style="width: {{qualityScore}}%"></view>
+          </view>
+          <text class="perf-value">{{qualityScore}}分</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 临时工有效期提醒 -->
+  <view class="temp-warning" wx:if="{{userInfo.userType === 'temp' && userInfo.expireDate}}">
+    <text class="warning-icon">⏰</text>
+    <text class="warning-text">账号有效期至：{{userInfo.expireDate}}</text>
+  </view>
+</view>
+
+<!-- 底部安全区域 -->
+<view class="safe-area-bottom"></view>

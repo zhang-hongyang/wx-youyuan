@@ -1,0 +1,509 @@
+/* pages/order-edit/order-edit.wxss */
+
+/* 订单信息卡片 */
+.order-info-card {
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  color: #ffffff;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.order-no {
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.order-status {
+  font-size: 22rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.order-status.assigned {
+  background: rgba(82, 196, 26, 0.3);
+}
+
+.order-status.unassigned {
+  background: rgba(250, 173, 20, 0.3);
+}
+
+.order-detail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 12rpx 20rpx;
+  border-radius: 8rpx;
+}
+
+.detail-item .label {
+  font-size: 24rpx;
+  opacity: 0.8;
+  margin-right: 12rpx;
+}
+
+.detail-item .value {
+  font-size: 26rpx;
+  font-weight: 500;
+}
+
+/* 人员区域 */
+.staff-section {
+  margin-bottom: 30rpx;
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 20rpx;
+}
+
+.staff-count {
+  font-size: 24rpx;
+  color: #999999;
+  font-weight: normal;
+}
+
+.subtitle {
+  font-size: 24rpx;
+  color: #999999;
+  font-weight: normal;
+  margin-left: 12rpx;
+}
+
+.staff-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.staff-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+  background: #f8f8f8;
+  border-radius: 16rpx;
+  border: 2rpx solid transparent;
+  transition: all 0.3s;
+}
+
+.staff-item.selected {
+  background: #e6f7ff;
+  border-color: #1890ff;
+}
+
+.staff-item.unavailable {
+  opacity: 0.6;
+}
+
+.staff-avatar {
+  width: 72rpx;
+  height: 72rpx;
+  background: #1890ff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  color: #ffffff;
+  margin-right: 20rpx;
+}
+
+.staff-avatar.temp {
+  background: #faad14;
+}
+
+.staff-info {
+  flex: 1;
+}
+
+.staff-name {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #333333;
+  margin-bottom: 8rpx;
+}
+
+.staff-meta {
+  display: block;
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.staff-status {
+  margin-right: 20rpx;
+}
+
+.status-badge {
+  font-size: 22rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 8rpx;
+}
+
+.status-badge.free {
+  background: #f6ffed;
+  color: #52c41a;
+}
+
+.status-badge.busy {
+  background: #fff1f0;
+  color: #ff4d4f;
+}
+
+.select-icon {
+  width: 44rpx;
+  height: 44rpx;
+  border: 2rpx solid #d9d9d9;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  color: #ffffff;
+}
+
+.select-icon.checked {
+  background: #1890ff;
+  border-color: #1890ff;
+}
+
+.request-temp-btn {
+  width: 100%;
+  height: 80rpx;
+  background: #f5f5f5;
+  border: 2rpx dashed #d9d9d9;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  color: #666666;
+  margin-top: 20rpx;
+}
+
+.request-temp-btn::after {
+  border: none;
+}
+
+.btn-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+}
+
+/* 车辆区域 */
+.vehicle-section {
+  margin-bottom: 30rpx;
+}
+
+.vehicle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.vehicle-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+  background: #f8f8f8;
+  border-radius: 16rpx;
+  border: 2rpx solid transparent;
+}
+
+.vehicle-item.selected {
+  background: #e6f7ff;
+  border-color: #1890ff;
+}
+
+.vehicle-item.unavailable {
+  opacity: 0.6;
+}
+
+.vehicle-icon {
+  font-size: 48rpx;
+  margin-right: 20rpx;
+}
+
+.vehicle-info {
+  flex: 1;
+}
+
+.vehicle-plate {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 8rpx;
+}
+
+.vehicle-type {
+  display: block;
+  font-size: 24rpx;
+  color: #999999;
+}
+
+/* 外部车辆 */
+.external-vehicle {
+  display: flex;
+  gap: 20rpx;
+}
+
+.external-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30rpx 0;
+  background: #f8f8f8;
+  border-radius: 16rpx;
+  border: 2rpx solid transparent;
+}
+
+.external-option.selected {
+  background: #e6f7ff;
+  border-color: #1890ff;
+}
+
+.external-icon {
+  font-size: 48rpx;
+  margin-bottom: 12rpx;
+}
+
+.external-name {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #333333;
+  margin-bottom: 8rpx;
+}
+
+.external-desc {
+  font-size: 22rpx;
+  color: #999999;
+}
+
+.external-remark {
+  margin-top: 20rpx;
+}
+
+.external-remark input {
+  width: 100%;
+  height: 80rpx;
+  background: #f8f8f8;
+  border-radius: 12rpx;
+  padding: 0 24rpx;
+  font-size: 28rpx;
+  box-sizing: border-box;
+}
+
+/* 物资配备 */
+.inventory-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.inventory-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx;
+  background: #f8f8f8;
+  border-radius: 16rpx;
+}
+
+.item-info {
+  display: flex;
+  align-items: center;
+}
+
+.item-icon {
+  font-size: 48rpx;
+  margin-right: 20rpx;
+}
+
+.item-detail {
+  display: flex;
+  flex-direction: column;
+}
+
+.item-name {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #333333;
+  margin-bottom: 8rpx;
+}
+
+.item-stock {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.item-control {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.quantity-btn {
+  width: 56rpx;
+  height: 56rpx;
+  background: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  color: #333333;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.quantity-btn.disabled {
+  opacity: 0.5;
+}
+
+.quantity-value {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #1890ff;
+  min-width: 60rpx;
+  text-align: center;
+}
+
+/* 时间预算 */
+.time-budget {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.budget-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 2rpx solid #f0f0f0;
+}
+
+.budget-item:last-child {
+  border-bottom: none;
+}
+
+.budget-label {
+  font-size: 28rpx;
+  color: #666666;
+}
+
+.budget-value {
+  display: flex;
+  align-items: center;
+  font-size: 30rpx;
+  color: #1890ff;
+  font-weight: 500;
+}
+
+.arrow {
+  font-size: 24rpx;
+  margin-left: 12rpx;
+}
+
+.budget-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fffbe6;
+  padding: 24rpx;
+  border-radius: 12rpx;
+  margin-top: 10rpx;
+}
+
+.total-label {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
+.total-value {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #faad14;
+}
+
+/* 备注 */
+.remark-input {
+  width: 100%;
+  height: 160rpx;
+  background: #f8f8f8;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  font-size: 28rpx;
+  box-sizing: border-box;
+}
+
+/* 底部操作栏 */
+.footer-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  padding: 20rpx 30rpx;
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.06);
+  z-index: 100;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.summary-item {
+  font-size: 24rpx;
+  color: #666666;
+}
+
+.submit-btn {
+  width: 280rpx;
+  height: 88rpx;
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  color: #ffffff;
+  border-radius: 44rpx;
+  font-size: 32rpx;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.submit-btn.disabled {
+  background: #d9d9d9;
+}
+
+.submit-btn::after {
+  border: none;
+}

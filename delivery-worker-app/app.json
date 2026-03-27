@@ -1,0 +1,73 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/login/login",
+    "pages/attendance/attendance",
+    "pages/checkin/checkin",
+    "pages/problem/problem",
+    "pages/performance/performance",
+    "pages/bonus/bonus",
+    "pages/delivery-detail/delivery-detail",
+    "pages/admin/admin",
+    "pages/profile/profile",
+    "pages/tracking/tracking",
+    "pages/reimbursement/reimbursement",
+    "pages/temp-worker-request/temp-worker-request",
+    "pages/temp-check-out/temp-check-out",
+    "pages/warehouse/warehouse",
+    "pages/schedule/schedule",
+    "pages/order-edit/order-edit",
+    "pages/temp-order-upload/temp-order-upload",
+    "pages/inspection/inspection",
+    "pages/repair-manage/repair-manage",
+    "pages/warehouse-stats/warehouse-stats",
+    "pages/inventory-manage/inventory-manage"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#1890ff",
+    "navigationBarTitleText": "送货人员工作台",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f5f5f5"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#1890ff",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "工作台",
+        "iconPath": "images/icon_home.png",
+        "selectedIconPath": "images/icon_home_active.png"
+      },
+      {
+        "pagePath": "pages/attendance/attendance",
+        "text": "考勤",
+        "iconPath": "images/icon_attendance.png",
+        "selectedIconPath": "images/icon_attendance_active.png"
+      },
+      {
+        "pagePath": "pages/performance/performance",
+        "text": "绩效",
+        "iconPath": "images/icon_chart.png",
+        "selectedIconPath": "images/icon_chart_active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "images/icon_user.png",
+        "selectedIconPath": "images/icon_user_active.png"
+      }
+    ]
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "你的位置信息将用于考勤打卡和导航"
+    }
+  },
+  "requiredBackgroundModes": ["location"],
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

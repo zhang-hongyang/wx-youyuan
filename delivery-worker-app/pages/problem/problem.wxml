@@ -1,0 +1,248 @@
+<!--pages/problem/problem.wxml-->
+<view class="container">
+  <!-- 问题类型选择 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">选择问题类型</text>
+    </view>
+    <view class="problem-types">
+      <view class="type-card {{selectedType === item.key ? 'active' : ''}}" 
+            wx:for="{{problemTypes}}" 
+            wx:key="key"
+            bindtap="selectType"
+            data-type="{{item.key}}">
+        <view class="type-icon">{{item.icon}}</view>
+        <text class="type-name">{{item.name}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 问题详情（货品问题） -->
+  <view class="card" wx:if="{{selectedType === 'goods'}}">
+    <view class="card-header">
+      <text class="card-title">货品问题详情</text>
+    </view>
+    <view class="sub-types">
+      <view class="sub-type {{goodsProblem.subType === item.key ? 'active' : ''}}" 
+            wx:for="{{goodsSubTypes}}" 
+            wx:key="key"
+            bindtap="selectGoodsSubType"
+            data-type="{{item.key}}">
+        {{item.name}}
+      </view>
+    </view>
+    
+    <!-- 缺少物品 -->
+    <view class="form-section" wx:if="{{goodsProblem.subType === 'missing'}}">
+      <view class="form-row">
+        <text class="form-label">缺少物品</text>
+        <input type="text" placeholder="请输入缺少的物品名称" 
+               value="{{goodsProblem.missingItem}}" 
+               bindinput="onMissingItemInput"/>
+      </view>
+      <view class="form-row">
+        <text class="form-label">缺少数量</text>
+        <input type="number" placeholder="请输入数量" 
+               value="{{goodsProblem.missingCount}}" 
+               bindinput="onMissingCountInput"/>
+      </view>
+    </view>
+
+    <!-- 破损物品 -->
+    <view class="form-section" wx:if="{{goodsProblem.subType === 'damaged'}}">
+      <view class="form-row">
+        <text class="form-label">破损原因</text>
+        <picker bindchange="onDamageReasonChange" value="{{damageReasonIndex}}" range="{{damageReasons}}">
+          <view class="picker-value">
+            {{damageReasons[damageReasonIndex] || '请选择破损原因'}}
+            <text class="arrow">></text>
+          </view>
+        </picker>
+      </view>
+      <view class="form-row">
+        <text class="form-label">破损程度</text>
+        <view class="severity-selector">
+          <view class="severity-option {{goodsProblem.severity === item.value ? 'active' : ''}}" 
+                wx:for="{{severityLevels}}" 
+                wx:key="value"
+                bindtap="selectSeverity"
+                data-value="{{item.value}}">
+            {{item.label}}
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 规格不符 -->
+    <view class="form-section" wx:if="{{goodsProblem.subType === 'mismatch'}}">
+      <view class="form-row">
+        <text class="form-label">实际规格</text>
+        <textarea placeholder="请描述实际收到的物品规格..." 
+                  value="{{goodsProblem.actualSpec}}" 
+                  bindinput="onActualSpecInput"/>
+      </view>
+      <view class="form-row">
+        <text class="form-label">订单规格</text>
+        <textarea placeholder="请描述订单中的规格要求..." 
+                  value="{{goodsProblem.orderSpec}}" 
+                  bindinput="onOrderSpecInput"/>
+      </view>
+    </view>
+  </view>
+
+  <!-- 问题详情（现场施工问题） -->
+  <view class="card" wx:if="{{selectedType === 'site'}}">
+    <view class="card-header">
+      <text class="card-title">现场施工问题</text>
+    </view>
+    <view class="checkbox-list">
+      <view class="checkbox-item" wx:for="{{siteIssues}}" wx:key="key">
+        <checkbox checked="{{item.checked}}" bindtap="toggleSiteIssue" data-index="{{index}}"/>
+        <text class="checkbox-label">{{item.name}}</text>
+      </view>
+    </view>
+    <view class="form-row">
+      <text class="form-label">问题描述</text>
+      <textarea placeholder="请详细描述现场问题..." 
+                value="{{siteProblem.description}}" 
+                bindinput="onSiteDescInput"/>
+    </view>
+  </view>
+
+  <!-- 问题详情（客户问题） -->
+  <view class="card" wx:if="{{selectedType === 'customer'}}">
+    <view class="card-header">
+      <text class="card-title">客户问题</text>
+    </view>
+    <view class="sub-types">
+      <view class="sub-type {{customerProblem.subType === item.key ? 'active' : ''}}" 
+            wx:for="{{customerSubTypes}}" 
+            wx:key="key"
+            bindtap="selectCustomerSubType"
+            data-type="{{item.key}}">
+        {{item.name}}
+      </view>
+    </view>
+    <view class="form-row">
+      <text class="form-label">详细说明</text>
+      <textarea placeholder="请描述客户问题的具体情况..." 
+                value="{{customerProblem.description}}" 
+                bindinput="onCustomerDescInput"/>
+    </view>
+  </view>
+
+  <!-- 问题详情（安全事故） -->
+  <view class="card" wx:if="{{selectedType === 'accident'}}">
+    <view class="card-header">
+      <text class="card-title">安全事故</text>
+    </view>
+    <view class="sub-types">
+      <view class="sub-type {{accidentProblem.subType === item.key ? 'active' : ''}}" 
+            wx:for="{{accidentSubTypes}}" 
+            wx:key="key"
+            bindtap="selectAccidentSubType"
+            data-type="{{item.key}}">
+        {{item.name}}
+      </view>
+    </view>
+    <view class="urgency-notice">
+      <text class="urgency-icon">🚨</text>
+      <text class="urgency-text">安全事故将立即通知管理人员，请保持电话畅通</text>
+    </view>
+  </view>
+
+  <!-- 关联订单 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">关联订单</text>
+    </view>
+    <picker bindchange="onOrderChange" value="{{selectedOrderIndex}}" range="{{orders}}" range-key="orderNo">
+      <view class="picker-value order-picker">
+        <view class="order-info" wx:if="{{selectedOrderIndex >= 0}}">
+          <text class="order-no">{{orders[selectedOrderIndex].orderNo}}</text>
+          <text class="order-customer">{{orders[selectedOrderIndex].customerName}}</text>
+        </view>
+        <text wx:else class="picker-placeholder">请选择关联的送货单</text>
+        <text class="arrow">></text>
+      </view>
+    </picker>
+  </view>
+
+  <!-- 照片证据 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">照片证据</text>
+      <text class="header-hint">（请拍摄问题现场照片）</text>
+    </view>
+    <view class="photo-grid">
+      <view class="photo-item" wx:for="{{photos}}" wx:key="index">
+        <image src="{{item}}" mode="aspectFill" bindtap="previewPhoto" data-index="{{index}}"/>
+        <view class="delete-btn" bindtap="deletePhoto" data-index="{{index}}">×</view>
+      </view>
+      <view class="photo-item photo-add" bindtap="takePhoto" wx:if="{{photos.length < 6}}">
+        <text class="add-icon">📷</text>
+        <text class="add-text">添加照片</text>
+        <text class="add-hint">{{photos.length}}/6</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 补充说明 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">补充说明</text>
+    </view>
+    <textarea class="remark-textarea" 
+              placeholder="请详细描述问题情况，以便管理人员快速处理..." 
+              value="{{remark}}" 
+              bindinput="onRemarkInput"
+              maxlength="500"/>
+    <text class="remark-count">{{remark.length}}/500</text>
+  </view>
+
+  <!-- 处理期望 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">处理期望</text>
+    </view>
+    <view class="expect-options">
+      <view class="expect-option {{expectation === item.value ? 'active' : ''}}" 
+            wx:for="{{expectOptions}}" 
+            wx:key="value"
+            bindtap="selectExpectation"
+            data-value="{{item.value}}">
+        <text class="option-icon">{{item.icon}}</text>
+        <text class="option-text">{{item.label}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <button class="submit-btn {{canSubmit ? '' : 'disabled'}}" 
+          bindtap="submitProblem"
+          disabled="{{!canSubmit || isSubmitting}}">
+    <text wx:if="{{!isSubmitting}}">提交问题</text>
+    <text wx:else>提交中...</text>
+  </button>
+
+  <!-- 我的问题记录 -->
+  <view class="history-section">
+    <view class="section-header">
+      <text class="section-title">我的问题记录</text>
+      <text class="view-all" bindtap="viewAllProblems">查看全部 ></text>
+    </view>
+    <view class="problem-list">
+      <view class="problem-item {{item.status}}" wx:for="{{myProblems}}" wx:key="id">
+        <view class="problem-icon">{{item.typeIcon}}</view>
+        <view class="problem-content">
+          <view class="problem-header">
+            <text class="problem-type">{{item.typeName}}</text>
+            <view class="status-tag {{item.status}}">{{item.statusText}}</view>
+          </view>
+          <text class="problem-desc">{{item.description}}</text>
+          <text class="problem-time">{{item.createTime}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

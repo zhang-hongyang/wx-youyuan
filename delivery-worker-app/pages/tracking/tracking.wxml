@@ -1,0 +1,115 @@
+<!--pages/tracking/tracking.wxml-->
+<view class="tracking-container">
+  <!-- 地图区域 -->
+  <view class="map-container">
+    <map 
+      id="deliveryMap"
+      class="delivery-map"
+      longitude="{{currentLocation.longitude}}"
+      latitude="{{currentLocation.latitude}}"
+      scale="{{mapScale}}"
+      show-location
+      markers="{{markers}}"
+      polyline="{{polyline}}"
+      enable-zoom
+      enable-scroll
+      enable-rotate
+    ></map>
+    
+    <!-- 地图控制按钮 -->
+    <view class="map-controls">
+      <view class="control-btn" bindtap="locateCurrent">
+        <text class="control-icon">📍</text>
+      </view>
+      <view class="control-btn" bindtap="changeMapType">
+        <text class="control-icon">🗺️</text>
+      </view>
+      <view class="control-btn" bindtap="contactDriver">
+        <text class="control-icon">📞</text>
+      </view>
+    </view>
+
+    <!-- 预计到达时间卡片 -->
+    <view class="eta-card">
+      <view class="eta-icon">🚚</view>
+      <view class="eta-info">
+        <text class="eta-label">预计到达</text>
+        <text class="eta-time">{{etaTime}}</text>
+      </view>
+      <view class="eta-distance">
+        <text class="distance-value">{{remainingDistance}}km</text>
+        <text class="distance-label">剩余距离</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 配送信息 -->
+  <view class="info-card">
+    <view class="driver-info">
+      <view class="driver-avatar">{{driverInfo.name[0]}}</view>
+      <view class="driver-detail">
+        <view class="driver-name-row">
+          <text class="driver-name">{{driverInfo.name}}</text>
+          <view class="driver-tag">{{driverInfo.userType === 'formal' ? '正式员工' : '临时工'}}</view>
+        </view>
+        <view class="driver-phone" bindtap="callDriver">
+          <text>📞 {{driverInfo.phone}}</text>
+        </view>
+      </view>
+      <view class="driver-rating">
+        <text class="rating-score">⭐ {{driverInfo.rating}}</text>
+        <text class="rating-count">{{driverInfo.deliveryCount}}单</text>
+      </view>
+    </view>
+
+    <view class="divider"></view>
+
+    <!-- 订单信息 -->
+    <view class="order-info">
+      <view class="info-row">
+        <text class="info-label">订单编号</text>
+        <text class="info-value">{{orderInfo.orderNo}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">配送地址</text>
+        <text class="info-value">{{orderInfo.address}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">预约时间</text>
+        <text class="info-value">{{orderInfo.scheduledTime}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 配送进度 -->
+  <view class="progress-card">
+    <view class="card-title">配送进度</view>
+    <view class="progress-timeline">
+      <view class="progress-item {{item.completed ? 'completed' : ''}} {{item.active ? 'active' : ''}}" 
+            wx:for="{{deliveryProgress}}" 
+            wx:key="status">
+        <view class="progress-dot"></view>
+        <view class="progress-content">
+          <text class="progress-status">{{item.label}}</text>
+          <text class="progress-time">{{item.time || '等待中...'}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 刷新提示 -->
+  <view class="refresh-hint">
+    <text>位置每30秒自动更新 · 最后更新 {{lastUpdateTime}}</text>
+  </view>
+
+  <!-- 分享按钮（员工端） -->
+  <view class="action-bar" wx:if="{{isDriver}}">
+    <button class="share-btn" bindtap="shareLocation">
+      <text class="btn-icon">🔗</text>
+      <text>分享位置给客户</text>
+    </button>
+    <button class="stop-btn" bindtap="stopSharing" wx:if="{{isSharing}}">
+      <text>停止共享</text>
+    </button>
+  </view>
+</view>
