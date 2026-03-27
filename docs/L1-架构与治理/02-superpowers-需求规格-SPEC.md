@@ -40,9 +40,9 @@
 
 ## 需求证据文件
 
-1. delivery-worker-app/app.json
-2. delivery-worker-app/pages/login/login.js
-3. delivery-worker-app/pages/profile/profile.js
-4. delivery-worker-app/pages/reimbursement/reimbursement.js
-5. delivery-worker-app/cloudfunctions/api/index.js
-6. delivery-worker-app/MIN_REGRESSION_CHECKLIST.md
+1. app.json
+2. pages/login/login.js
+3. pages/profile/profile.js
+4. pages/reimbursement/reimbursement.js
+5. cloudfunctions/api/index.js
+6. MIN_REGRESSION_CHECKLIST.md
