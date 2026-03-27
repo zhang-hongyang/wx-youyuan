@@ -1,6 +1,7 @@
 const { get, post } = require('../utils/request.js');
 const util = require('../utils/util.js');
 const { STORAGE_KEYS } = require('../utils/constants.js');
+const { API_PATHS } = require('../utils/apiPaths.js');
 const { isMockFallbackEnabled } = require('../utils/runtimeSettings.js');
 const { extractList } = require('../utils/responseParser.js');
 const { uploadImages } = require('../utils/fileUploader.js');
@@ -62,7 +63,7 @@ async function getOrders() {
 
 async function getHistory() {
   try {
-    const res = await get('/reimbursements/history', {}, { showErrorToast: false });
+    const res = await get(API_PATHS.reimbursement.history, {}, { showErrorToast: false });
     const list = extractList(res);
     return list.length ? list : mockHistory;
   } catch (e) {
@@ -83,7 +84,7 @@ async function submitReimbursement(payload) {
   };
 
   try {
-    await post('/reimbursements/submit', normalizedPayload, {
+    await post(API_PATHS.reimbursement.submit, normalizedPayload, {
       showErrorToast: false,
       idempotencyKey: `reimbursement-${normalizedPayload.id}`
     });
@@ -96,6 +97,34 @@ async function submitReimbursement(payload) {
   const localList = wx.getStorageSync(STORAGE_KEYS.REIMBURSEMENTS) || [];
   localList.unshift(normalizedPayload);
   wx.setStorageSync(STORAGE_KEYS.REIMBURSEMENTS, localList);
+  return { success: true };
+}
+
+async function getReviewQueue({ status = 'pending' } = {}) {
+  try {
+    const res = await get(API_PATHS.reimbursement.adminList, {
+      status: status === 'all' ? '' : status
+    }, { showErrorToast: false });
+    const list = extractList(res);
+    return list;
+  } catch (e) {
+    if (!isMockFallbackEnabled()) {
+      throw e;
+    }
+    const local = wx.getStorageSync(STORAGE_KEYS.REIMBURSEMENTS) || [];
+    if (status === 'all') {
+      return local;
+    }
+    return local.filter(item => String(item.status || '') === status);
+  }
+}
+
+async function reviewReimbursement({ id, decision, reviewComment = '' }) {
+  await post(API_PATHS.reimbursement.review, {
+    id,
+    decision,
+    reviewComment
+  }, { showErrorToast: false });
   return { success: true };
 }
 
@@ -124,6 +153,8 @@ function buildReimbursementPayload({ orders, selectedOrderIndex, expenseType, se
 module.exports = {
   getOrders,
   getHistory,
+  getReviewQueue,
+  reviewReimbursement,
   submitReimbursement,
   buildReimbursementPayload
 };

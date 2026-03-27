@@ -9,6 +9,12 @@ const API_PATHS = {
   },
   checkin: {
     submit: '/checkin/submit'
+  },
+  reimbursement: {
+    history: '/reimbursements/history',
+    submit: '/reimbursements/submit',
+    adminList: '/admin/reimbursements',
+    review: '/admin/reimbursements/review'
   }
 };
 

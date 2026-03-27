@@ -2,9 +2,20 @@
 const app = getApp();
 const util = require('../../utils/util.js');
 const reimbursementService = require('../../services/reimbursementService.js');
+const { normalizeUserRole } = require('../../utils/rbac.js');
 
 Page({
   data: {
+    userRole: '',
+    isFinanceReviewMode: false,
+    reviewFilter: 'pending',
+    reviewList: [],
+    reviewStats: {
+      pending: 0,
+      approved: 0,
+      rejected: 0
+    },
+
     orders: [],
     selectedOrderIndex: -1,
     
@@ -32,17 +43,103 @@ Page({
     
     // 历史记录
     reimbursementHistory: [],
-    isSubmitting: false
+    isSubmitting: false,
+    canSubmit: false
   },
 
   onLoad() {
+    const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo') || {};
+    const userRole = normalizeUserRole(userInfo);
+    const isFinanceReviewMode = userRole === 'finance' || userRole === 'admin';
+
+    this.setData({
+      userRole,
+      isFinanceReviewMode
+    });
+
+    if (isFinanceReviewMode) {
+      this.loadReviewList();
+      return;
+    }
+
     this.loadOrders();
     this.loadHistory();
+    this.updateSubmitState();
     
     // 默认设置今天日期
     this.setData({
       expenseDate: util.formatDate(new Date())
     });
+  },
+
+  onShow() {
+    if (this.data.isFinanceReviewMode) {
+      this.loadReviewList();
+      return;
+    }
+    this.loadHistory();
+    this.updateSubmitState();
+  },
+
+  async loadReviewList() {
+    try {
+      const list = await reimbursementService.getReviewQueue({ status: this.data.reviewFilter });
+      const stats = {
+        pending: list.filter(item => item.status === 'pending').length,
+        approved: list.filter(item => item.status === 'approved').length,
+        rejected: list.filter(item => item.status === 'rejected').length
+      };
+      this.setData({
+        reviewList: list,
+        reviewStats: stats
+      });
+    } catch (e) {
+      wx.showToast({
+        title: e.message || '加载审核列表失败',
+        icon: 'none'
+      });
+    }
+  },
+
+  onReviewFilterTap(e) {
+    const value = e.currentTarget.dataset.value;
+    this.setData({ reviewFilter: value });
+    this.loadReviewList();
+  },
+
+  async approveReimbursement(e) {
+    const id = e.currentTarget.dataset.id;
+    await this.submitReviewDecision(id, 'approved');
+  },
+
+  async rejectReimbursement(e) {
+    const id = e.currentTarget.dataset.id;
+    await this.submitReviewDecision(id, 'rejected');
+  },
+
+  async submitReviewDecision(id, decision) {
+    if (!id) {
+      return;
+    }
+
+    const actionText = decision === 'approved' ? '通过' : '拒绝';
+    wx.showLoading({ title: '处理中...' });
+    try {
+      await reimbursementService.reviewReimbursement({
+        id,
+        decision,
+        reviewComment: ''
+      });
+      wx.hideLoading();
+      wx.showToast({ title: `已${actionText}`, icon: 'success' });
+      this.loadReviewList();
+    } catch (e) {
+      wx.hideLoading();
+      wx.showToast({
+        title: e.message || `${actionText}失败`,
+        icon: 'none'
+      });
+    }
   },
 
   // 加载订单列表
@@ -56,6 +153,7 @@ Page({
     this.setData({
       selectedOrderIndex: parseInt(e.detail.value)
     });
+    this.updateSubmitState();
   },
 
   // 选择费用类型
@@ -67,11 +165,13 @@ Page({
       expenseType: type,
       selectedExpenseType: selectedType
     });
+    this.updateSubmitState();
   },
 
   // 输入金额
   onAmountInput(e) {
     this.setData({ amount: e.detail.value });
+    this.updateSubmitState();
   },
 
   // 选择日期
@@ -95,6 +195,7 @@ Page({
         this.setData({
           invoices: [...this.data.invoices, ...newImages]
         });
+        this.updateSubmitState();
       }
     });
   },
@@ -110,6 +211,7 @@ Page({
         this.setData({
           billImages: [...this.data.billImages, ...newImages]
         });
+        this.updateSubmitState();
       }
     });
   },
@@ -144,6 +246,7 @@ Page({
     const { list, index } = e.currentTarget.dataset;
     const images = this.data[list].filter((_, i) => i !== index);
     this.setData({ [list]: images });
+    this.updateSubmitState();
   },
 
   // 加载历史记录
@@ -158,7 +261,7 @@ Page({
   },
 
   // 检查是否可以提交
-  canSubmit() {
+  checkCanSubmit() {
     const { selectedOrderIndex, expenseType, amount, billImages, selectedExpenseType, invoices } = this.data;
     
     if (selectedOrderIndex < 0) return false;
@@ -174,9 +277,15 @@ Page({
     return true;
   },
 
+  updateSubmitState() {
+    this.setData({
+      canSubmit: this.checkCanSubmit()
+    });
+  },
+
   // 提交报销
   submitReimbursement() {
-    if (!this.canSubmit()) {
+    if (!this.checkCanSubmit()) {
       const { selectedExpenseType, invoices } = this.data;
       
       if (selectedExpenseType.requireInvoice && invoices.length === 0) {
@@ -248,7 +357,8 @@ Page({
         description: '',
         invoices: [],
         billImages: [],
-        otherImages: []
+        otherImages: [],
+        canSubmit: false
       });
 
       this.loadHistory();

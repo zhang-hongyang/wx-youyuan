@@ -1,5 +1,62 @@
 <!--pages/reimbursement/reimbursement.wxml-->
 <view class="container">
+  <view class="card" wx:if="{{isFinanceReviewMode}}">
+    <view class="card-header">
+      <text class="card-title">财务审核中心</text>
+    </view>
+    <view class="review-stats">
+      <view class="review-stat-item">
+        <text class="review-stat-value">{{reviewStats.pending}}</text>
+        <text class="review-stat-label">待审核</text>
+      </view>
+      <view class="review-stat-item">
+        <text class="review-stat-value">{{reviewStats.approved}}</text>
+        <text class="review-stat-label">已通过</text>
+      </view>
+      <view class="review-stat-item">
+        <text class="review-stat-value">{{reviewStats.rejected}}</text>
+        <text class="review-stat-label">已拒绝</text>
+      </view>
+    </view>
+
+    <view class="review-filters">
+      <view class="review-filter {{reviewFilter === 'pending' ? 'active' : ''}}" data-value="pending" bindtap="onReviewFilterTap">待审核</view>
+      <view class="review-filter {{reviewFilter === 'approved' ? 'active' : ''}}" data-value="approved" bindtap="onReviewFilterTap">已通过</view>
+      <view class="review-filter {{reviewFilter === 'rejected' ? 'active' : ''}}" data-value="rejected" bindtap="onReviewFilterTap">已拒绝</view>
+      <view class="review-filter {{reviewFilter === 'all' ? 'active' : ''}}" data-value="all" bindtap="onReviewFilterTap">全部</view>
+    </view>
+  </view>
+
+  <view class="history-section" wx:if="{{isFinanceReviewMode}}">
+    <view class="section-header">
+      <text class="section-title">审核队列</text>
+    </view>
+    <view class="history-list" wx:if="{{reviewList.length > 0}}">
+      <view class="history-item {{item.status}}" wx:for="{{reviewList}}" wx:key="id">
+        <view class="history-icon">{{item.typeIcon || '🧾'}}</view>
+        <view class="history-content">
+          <view class="history-header">
+            <text class="history-type">{{item.typeName || '报销'}}</text>
+            <text class="history-amount">¥{{item.amount || '0.00'}}</text>
+          </view>
+          <text class="history-order">{{item.orderNo || '-'}}</text>
+          <view class="history-footer">
+            <text class="history-date">{{item.date || item.createTime || '-'}}</text>
+            <view class="status-tag {{item.status}}">{{item.statusText || item.status || '-'}}</view>
+          </view>
+          <view class="review-actions" wx:if="{{item.status === 'pending'}}">
+            <button class="review-btn reject" data-id="{{item.id}}" bindtap="rejectReimbursement">拒绝</button>
+            <button class="review-btn approve" data-id="{{item.id}}" bindtap="approveReimbursement">通过</button>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="empty-view" wx:else>
+      <text>当前筛选下暂无报销记录</text>
+    </view>
+  </view>
+
+  <block wx:if="{{!isFinanceReviewMode}}">
   <!-- 关联订单 -->
   <view class="card">
     <view class="card-header">
@@ -202,4 +259,5 @@
   </view>
 
   <view class="safe-area-bottom"></view>
+</block>
 </view>

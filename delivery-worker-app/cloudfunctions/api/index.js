@@ -1073,6 +1073,58 @@ async function handleAdminLogAppend(data, openId, header) {
   return ok({ success: true });
 }
 
+async function handleAdminReimbursementsList(data, openId, header) {
+  await assertRoleAccess(openId, [USER_ROLE.ADMIN, USER_ROLE.FINANCE, USER_ROLE.MANAGER], header);
+  const docs = await listByWhere(COLLECTIONS.reimbursements, {});
+  const status = String((data && data.status) || '').trim();
+  const filtered = status ? docs.filter(item => String(item.status || '').trim() === status) : docs;
+  return ok(filtered.map(stripMeta));
+}
+
+async function handleAdminReimbursementsReview(data, openId, header) {
+  const currentUser = await assertRoleAccess(openId, [USER_ROLE.ADMIN, USER_ROLE.FINANCE], header);
+  const id = String((data && data.id) || '').trim();
+  const decision = String((data && data.decision) || '').trim();
+  const reviewComment = String((data && data.reviewComment) || '').trim();
+
+  if (!id) {
+    return fail('报销ID不能为空', 40001);
+  }
+  if (!['approved', 'rejected'].includes(decision)) {
+    return fail('审核结果不合法', 40001);
+  }
+
+  const record = await findOne(COLLECTIONS.reimbursements, { id });
+  if (!record) {
+    return fail('报销记录不存在', 40401);
+  }
+
+  const nextPayload = {
+    ...record,
+    status: decision,
+    statusText: decision === 'approved' ? '已通过' : '已拒绝',
+    reviewBy: currentUser.employeeId || 'unknown',
+    reviewComment,
+    reviewTime: formatNow(),
+    updateTime: formatNow()
+  };
+
+  const saved = await addOrUpdateByField(COLLECTIONS.reimbursements, 'id', nextPayload);
+  await appendAuditLog({
+    operatorId: currentUser.employeeId || 'unknown',
+    module: 'reimbursement',
+    action: 'review',
+    detail: `审核报销 ${id} -> ${decision}`,
+    payloadSnapshot: {
+      id,
+      decision,
+      reviewComment
+    }
+  });
+
+  return ok(stripMeta(saved));
+}
+
 exports.main = async (event) => {
   const { path = '', method = 'GET', data = {}, header = {} } = event;
   const context = cloud.getWXContext();
@@ -1153,6 +1205,12 @@ exports.main = async (event) => {
     }
     if (method === 'POST' && path === '/admin/logs/append') {
       return await handleAdminLogAppend(data, openId, header);
+    }
+    if (method === 'GET' && path === '/admin/reimbursements') {
+      return await handleAdminReimbursementsList(data, openId, header);
+    }
+    if (method === 'POST' && path === '/admin/reimbursements/review') {
+      return await handleAdminReimbursementsReview(data, openId, header);
     }
 
     const orderDetailMatch = path.match(/^\/orders\/([^/]+)$/);
