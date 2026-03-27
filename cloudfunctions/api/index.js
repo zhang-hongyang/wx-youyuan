@@ -252,6 +252,25 @@ async function assertAdminAccess(openId, header = {}) {
   return await assertRoleAccess(openId, [USER_ROLE.ADMIN, USER_ROLE.WAREHOUSE, USER_ROLE.MANAGER], header);
 }
 
+function canViewAllPerformanceData(user = {}) {
+  const role = user.normalizedRole || normalizeRole(user.role || user.userType);
+  return [USER_ROLE.ADMIN, USER_ROLE.MANAGER, USER_ROLE.FINANCE, USER_ROLE.WAREHOUSE].includes(role);
+}
+
+function isMyRecord(doc = {}, currentUser = {}, openId = '') {
+  const employeeId = String(currentUser.employeeId || '').trim();
+  const userId = String(currentUser.id || '').trim();
+  const docOpenId = String(doc.openId || '').trim();
+  const docEmployeeId = String(doc.employeeId || '').trim();
+  const docUserId = String(doc.userId || doc.submitBy || '').trim();
+
+  return !!(
+    (docOpenId && openId && docOpenId === openId) ||
+    (docEmployeeId && employeeId && docEmployeeId === employeeId) ||
+    (docUserId && userId && docUserId === userId)
+  );
+}
+
 function formatNow() {
   const date = new Date();
   const yyyy = date.getFullYear();
@@ -745,14 +764,25 @@ async function handleProblemSubmit(data, openId) {
 }
 
 async function handleBonusDetail(data, openId) {
-  await assertRoleAccess(openId, []);
-  const doc = await findOne(COLLECTIONS.performanceSnapshots, {
+  const currentUser = await assertRoleAccess(openId, []);
+  const docs = await listByWhere(COLLECTIONS.performanceSnapshots, {
     year: data.year,
     month: data.month
   });
-  if (doc && doc.bonusDetail) {
-    return ok(stripMeta(doc.bonusDetail));
+
+  const bonusDetailDocs = docs.filter(item => item && item.bonusDetail).map(item => item.bonusDetail);
+  let target = null;
+
+  if (canViewAllPerformanceData(currentUser)) {
+    target = bonusDetailDocs[0] || null;
+  } else {
+    target = bonusDetailDocs.find(item => isMyRecord(item, currentUser, openId)) || null;
   }
+
+  if (target) {
+    return ok(stripMeta(target));
+  }
+
   return ok({
     monthlyBonus: 0,
     bonusStatus: 'pending',
@@ -774,12 +804,19 @@ async function handleBonusDetail(data, openId) {
 }
 
 async function handleBonusHistory(openId) {
-  await assertRoleAccess(openId, []);
+  const currentUser = await assertRoleAccess(openId, []);
   const docs = await listByWhere(COLLECTIONS.bonusHistory, {});
-  if (docs.length) {
+
+  if (!docs.length) {
+    return ok([]);
+  }
+
+  if (canViewAllPerformanceData(currentUser)) {
     return ok(docs.map(stripMeta));
   }
-  return ok([]);
+
+  const ownDocs = docs.filter(item => isMyRecord(item, currentUser, openId));
+  return ok(ownDocs.map(stripMeta));
 }
 
 async function handleBonusAppeal(data, openId) {
@@ -805,11 +842,22 @@ async function handleBonusAppeal(data, openId) {
 }
 
 async function handlePerformanceSummary(data, openId) {
-  await assertRoleAccess(openId, []);
-  const doc = await findOne(COLLECTIONS.performanceSnapshots, { timeRange: data.timeRange || 'month' });
-  if (doc && doc.summary) {
-    return ok(stripMeta(doc.summary));
+  const currentUser = await assertRoleAccess(openId, []);
+  const docs = await listByWhere(COLLECTIONS.performanceSnapshots, { timeRange: data.timeRange || 'month' });
+
+  const summaryDocs = docs.filter(item => item && item.summary).map(item => item.summary);
+  let target = null;
+
+  if (canViewAllPerformanceData(currentUser)) {
+    target = summaryDocs[0] || null;
+  } else {
+    target = summaryDocs.find(item => isMyRecord(item, currentUser, openId)) || null;
   }
+
+  if (target) {
+    return ok(stripMeta(target));
+  }
+
   return ok({
     monthlyScore: 0,
     performanceInfo: { level: '-', coefficient: 1 },
@@ -834,21 +882,35 @@ async function handlePerformanceSummary(data, openId) {
 }
 
 async function handlePerformanceTrend(data, openId) {
-  await assertRoleAccess(openId, []);
+  const currentUser = await assertRoleAccess(openId, []);
   const docs = await listByWhere(COLLECTIONS.performanceSnapshots, { type: `trend_${data.timeRange || 'month'}` });
-  if (docs.length) {
+
+  if (!docs.length) {
+    return ok([]);
+  }
+
+  if (canViewAllPerformanceData(currentUser)) {
     return ok(docs.map(stripMeta));
   }
-  return ok([]);
+
+  const ownDocs = docs.filter(item => isMyRecord(item, currentUser, openId));
+  return ok(ownDocs.map(stripMeta));
 }
 
 async function handlePerformanceRankings(openId) {
-  await assertRoleAccess(openId, []);
+  const currentUser = await assertRoleAccess(openId, []);
   const docs = await listByWhere(COLLECTIONS.performanceRankings, {});
-  if (docs.length) {
+
+  if (!docs.length) {
+    return ok([]);
+  }
+
+  if (canViewAllPerformanceData(currentUser)) {
     return ok(docs.map(stripMeta));
   }
-  return ok([]);
+
+  const ownDocs = docs.filter(item => isMyRecord(item, currentUser, openId));
+  return ok(ownDocs.map(stripMeta));
 }
 
 async function handleAdminEmployeesList(openId, header) {

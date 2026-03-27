@@ -245,6 +245,15 @@ code = 0 表示成功，其他为业务错误。
 - 当前云函数已提供最小后台接口，供内部管理工具或运维工具直接对接
 - 调用人必须已在 `users` 集合中绑定，且 `role` 为 `admin` 或 `warehouse`
 
+补充权限说明（2026-03-27）：
+
+1. 奖金与绩效读取接口已按角色收敛：
+  - `admin/manager/finance/warehouse` 可查看全量
+  - 其他角色仅可查看本人记录
+2. 财务审核接口：
+  - `GET /admin/reimbursements`（admin/finance/manager）
+  - `POST /admin/reimbursements/review`（admin/finance）
+
 ### 员工列表
 - path: /admin/employees
 - method: GET
